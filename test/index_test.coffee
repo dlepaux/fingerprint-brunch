@@ -75,7 +75,7 @@ describe 'Fingerprint', ->
   # executed before each test
   beforeEach ->
     fingerprint = new Fingerprint(
-      env: ['production']
+      env: ['development']
       paths:
         public: path.join('test', 'public')
       plugins:
@@ -188,7 +188,7 @@ describe 'Fingerprint', ->
         fs.existsSync(fingerprint.options.manifest)
 
     it 'does not run in non-production environment', ->
-      fingerprint.config.env = []
+      fingerprint.config.env = ['development']
       fingerprint.onCompile(GENERATED_FILES)
       expect(didRun()).to.be.false
 
@@ -198,7 +198,7 @@ describe 'Fingerprint', ->
       expect(didRun()).to.be.true
 
     it 'does run in production environment', ->
-      fingerprint.options.env = ['production']
+      fingerprint.config.env = ['production']
       fingerprint.onCompile(GENERATED_FILES)
       expect(didRun()).to.be.true
 
