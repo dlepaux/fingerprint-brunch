@@ -53,6 +53,9 @@ class Fingerprint
 
   # Main method
   onCompile: (generatedFiles) ->
+    # Do nothing if not enabled
+    return unless @_isEnabled()
+
     # Open files
     for file in generatedFiles
       # Set var with generatedFile
@@ -83,9 +86,7 @@ class Fingerprint
   # Wana coffee?
   _makeCoffee: (filePath) ->
     fileNewName = filePath
-    if @_isFingerprintable()
-      # Just fingerprint targets
-      fileNewName = @_fingerprintFile(filePath)
+    fileNewName = @_fingerprintFile(filePath)
     @_addToMap(filePath, fileNewName)
 
   # Unixify & Remove part from original path
@@ -149,9 +150,7 @@ class Fingerprint
           console.log 'no such file : ' + (that.map[targetPath] || targetPath)
       # END forEach
 
-      modifiedFilePath = filePath
-      if @_isFingerprintable()
-        modifiedFilePath = @_fingerprintCompose(filePath, data.fileContent)
+      modifiedFilePath = @_fingerprintCompose(filePath, data.fileContent)
 
       # write file to generate
       fs.writeFileSync(modifiedFilePath, data.fileContent, 'utf8')
@@ -180,8 +179,8 @@ class Fingerprint
   _escapeStringToRegex: (string) ->
     return string.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&")
 
-  # IsFingerprintable
-  _isFingerprintable: ->
+  # IsEnabled
+  _isEnabled: ->
     return (@config.env[0] in @options.environments) or @options.alwaysRun
 
   # Clear all the fingerprinted files
@@ -227,16 +226,14 @@ class Fingerprint
 
   # Write a new manifest
   _writeManifest: ->
-    if @_isFingerprintable()
-      output = JSON.stringify @map, null, "  "
-      fs.writeFileSync(@options.manifest, output)
+    output = JSON.stringify @map, null, "  "
+    fs.writeFileSync(@options.manifest, output)
 
-  # Merging existing manifest with new entree
+  # Merging existing manifest with new entry
   _mergeManifest: ->
-    if @_isFingerprintable()
-      manifest = fs.readFileSync @options.manifest, 'utf8'
-      manifest = JSON.parse manifest
-      manifest[k] = @map[k] for k of @map
-      @_writeManifest(manifest)
+    manifest = fs.readFileSync @options.manifest, 'utf8'
+    manifest = JSON.parse manifest
+    manifest[k] = @map[k] for k of @map
+    @_writeManifest(manifest)
 
 module.exports = Fingerprint
