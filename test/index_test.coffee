@@ -217,4 +217,3 @@ describe 'Fingerprint', ->
       fingerprint.options.autoReplaceAndHash = true
       fingerprint.onCompile(GENERATED_FILES)
       expect(fingerprintAutoReplaceFileExists('css/sample.css')).to.be.true
-
