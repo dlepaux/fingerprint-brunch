@@ -128,6 +128,13 @@ My config.paths.public is `../../public/theme/theme-1/` in `css` your fonts, ima
 
 You must set `publicRootPath` with `../../public` to conserve correct link in your css..
 
+### manifestGenerationForce
+
+Type: `Boolean`
+Default: `false`
+
+Force the generation of the manifest, event if there are no fingerprinted files
+
 ### assetsPatterns
 
 Type: `RegExp Object`
