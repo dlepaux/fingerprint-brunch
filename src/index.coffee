@@ -34,6 +34,8 @@ class Fingerprint
       autoReplaceAndHash: false
       # public root path ( for multi theme support)
       publicRootPath: '/public'
+      # Force the generation of the manifest, event if there are no fingerprinted files
+      manifestGenerationForce: false
 
       # Assets pattern
       assetsPattern: new RegExp(/url\([\'\"]?[a-zA-Z0-9\-\/_.:]+\.(woff|woff2|eot|ttf|otf|jpg|jpeg|png|bmp|gif|svg)\??\#?[a-zA-Z0-9\-\/_]*[\'\"]?\)/g)
@@ -228,13 +230,13 @@ class Fingerprint
 
   # Write a new manifest
   _writeManifest: ->
-    if @_isFingerprintable()
+    if @_isFingerprintable() or @options.manifestGenerationForce
       output = JSON.stringify @map, null, "  "
       fs.writeFileSync(@options.manifest, output)
 
   # Merging existing manifest with new entree
   _mergeManifest: ->
-    if @_isFingerprintable()
+    if @_isFingerprintable() or @options.manifestGenerationForce
       manifest = fs.readFileSync @options.manifest, 'utf8'
       manifest = JSON.parse manifest
       manifest[k] = @map[k] for k of @map
