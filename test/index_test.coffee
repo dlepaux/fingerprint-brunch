@@ -75,7 +75,7 @@ describe 'Fingerprint', ->
   # executed before each test
   beforeEach ->
     fingerprint = new Fingerprint(
-      env: ['development']
+      env: ['production']
       paths:
         public: path.join('test', 'public')
       plugins:
@@ -147,12 +147,10 @@ describe 'Fingerprint', ->
       setupFakeFileSystem()
 
     it 'renames sample.css with fingerprint', ->
-      fingerprint.options.alwaysRun = true
       fingerprint.onCompile(GENERATED_FILES)
       expect(fingerprintFileExists('css/sample.css')).to.be.true
 
     it 'renames sample.js with fingerprint', ->
-      fingerprint.options.alwaysRun = true
       fingerprint.onCompile(GENERATED_FILES)
       expect(fingerprintFileExists('js/sample.js')).to.be.true
 
