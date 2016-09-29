@@ -155,8 +155,9 @@ class Fingerprint
       if @_isFingerprintable()
         modifiedFilePath = @_fingerprintCompose(filePath, data.fileContent)
 
-      # write file to generate
-      fs.writeFileSync(modifiedFilePath, data.fileContent, 'utf8')
+      # Write file to generate and rename it
+      fs.writeFileSync(filePath, data.fileContent, 'utf8')
+      fs.renameSync(filePath, modifiedFilePath);
       @_addToMap(filePath, modifiedFilePath)
     else
       @_makeCoffee(filePath)

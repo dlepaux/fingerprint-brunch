@@ -147,12 +147,10 @@ describe 'Fingerprint', ->
       setupFakeFileSystem()
 
     it 'renames sample.css with fingerprint', ->
-      fingerprint.options.alwaysRun = true
       fingerprint.onCompile(GENERATED_FILES)
       expect(fingerprintFileExists('css/sample.css')).to.be.true
 
     it 'renames sample.js with fingerprint', ->
-      fingerprint.options.alwaysRun = true
       fingerprint.onCompile(GENERATED_FILES)
       expect(fingerprintFileExists('js/sample.js')).to.be.true
 
@@ -188,7 +186,7 @@ describe 'Fingerprint', ->
         fs.existsSync(fingerprint.options.manifest)
 
     it 'does not run in non-production environment', ->
-      fingerprint.config.env = []
+      fingerprint.config.env = ['development']
       fingerprint.onCompile(GENERATED_FILES)
       expect(didRun()).to.be.false
 
@@ -198,7 +196,7 @@ describe 'Fingerprint', ->
       expect(didRun()).to.be.true
 
     it 'does run in production environment', ->
-      fingerprint.options.env = ['production']
+      fingerprint.config.env = ['production']
       fingerprint.onCompile(GENERATED_FILES)
       expect(didRun()).to.be.true
 
@@ -217,4 +215,3 @@ describe 'Fingerprint', ->
       fingerprint.options.autoReplaceAndHash = true
       fingerprint.onCompile(GENERATED_FILES)
       expect(fingerprintAutoReplaceFileExists('css/sample.css')).to.be.true
-
