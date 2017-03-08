@@ -118,8 +118,6 @@ class Fingerprint
 
     # Return content of filePath and match pattern
     data = @_getAssetsInner(filePath)
-    console.log 'data'
-    console.log data
     if data.filePaths != null
       Object.keys(data.filePaths).forEach (key) ->
 
@@ -138,21 +136,16 @@ class Fingerprint
         targetPath = unixify(path.join(options.publicRootPath, data.filePaths[key]))
 
         # Target is local and exist?
-        console.log 'that.map'
         if fs.existsSync(that.map[targetPath] || targetPath)
-          console.log targetPath + ' is exist !'
           # Adding to map
           if typeof(that.map[targetPath]) == 'undefined'
             targetNewName = that._fingerprintFile(targetPath)
             that._addToMap(targetPath, path.join(config.paths.public, targetNewName.substring(config.paths.public.length)))
           else
             targetNewName = that.map[targetPath]
-          console.log 'targetNewName ' + targetNewName
 
           # Rename unhashed filePath by the hashed new name
           data.fileContent = data.fileContent.replace(match, "url('" + unixify(targetNewName.substring(options.publicRootPath.length)) + finalHash + "')")
-          console.log 'data.fileContent'
-          console.log data.fileContent
         else if options.verbose
           console.log 'no such file : ' + (that.map[targetPath] || targetPath)
       # END forEach
@@ -164,10 +157,6 @@ class Fingerprint
       # Write file to generate and rename it
       fs.writeFileSync(filePath, data.fileContent, 'utf8')
       fs.renameSync(filePath, modifiedFilePath)
-      console.log '--------'
-      console.log filePath
-      console.log modifiedFilePath
-      console.log '--------'
       @_addToMap(filePath, modifiedFilePath)
     else
       @_makeCoffee(filePath)
