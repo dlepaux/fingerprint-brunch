@@ -44,7 +44,8 @@ AUTOREPLACE_MAP =
 
 GENERATED_FILES = [
   {path:path.join(__dirname, 'public', 'js', 'sample.js')},
-  {path:path.join(__dirname, 'public', 'css', 'sample.css')}
+  {path:path.join(__dirname, 'public', 'css', 'sample.css')},
+  {path:path.join(__dirname, 'public', 'css', 'sample-2.css')}
 ]
 
 
