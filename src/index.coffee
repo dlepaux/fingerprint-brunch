@@ -137,7 +137,6 @@ class Fingerprint
 
         # Target is local and exist?
         if fs.existsSync(that.map[targetPath] || targetPath)
-
           # Adding to map
           if typeof(that.map[targetPath]) == 'undefined'
             targetNewName = that._fingerprintFile(targetPath)
@@ -157,7 +156,7 @@ class Fingerprint
 
       # Write file to generate and rename it
       fs.writeFileSync(filePath, data.fileContent, 'utf8')
-      fs.renameSync(filePath, modifiedFilePath);
+      fs.renameSync(filePath, modifiedFilePath)
       @_addToMap(filePath, modifiedFilePath)
     else
       @_makeCoffee(filePath)
