@@ -69,6 +69,8 @@ class Fingerprint
 
       # Hash only file in targets option key
       if @options.targets == '*' or (base + ext) in @options.targets
+        console.log 'filePath'
+        console.log filePath
         if @options.autoReplaceAndHash and fs.existsSync(filePath)
           # Fingerprint sub files
           @_findAndReplaceSubAssets(filePath)
