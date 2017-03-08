@@ -140,6 +140,8 @@ class Fingerprint
         targetPath = unixify(path.join(options.publicRootPath, data.filePaths[key]))
 
         # Target is local and exist?
+        console.log 'that.map'
+        console.log that.map
         if fs.existsSync(that.map[targetPath] || targetPath)
 
           # Adding to map
