@@ -163,7 +163,11 @@ class Fingerprint
 
       # Write file to generate and rename it
       fs.writeFileSync(filePath, data.fileContent, 'utf8')
-      fs.renameSync(filePath, modifiedFilePath);
+      fs.renameSync(filePath, modifiedFilePath)
+      console.log '--------'
+      console.log filePath
+      console.log modifiedFilePath
+      console.log '--------'
       @_addToMap(filePath, modifiedFilePath)
     else
       @_makeCoffee(filePath)
