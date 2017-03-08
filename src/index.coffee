@@ -129,6 +129,8 @@ class Fingerprint
 
         # Save Hash from filePath and remove it from filePath
         finalHash = that._extractHashFromURL(data.filePaths[key])
+        console.log 'finalHash'
+        console.log finalHash
         data.filePaths[key] = data.filePaths[key].replace(options.paramettersPattern, '')
 
         # Relative path with '../' is replaced with '/' for bootstrap font link
