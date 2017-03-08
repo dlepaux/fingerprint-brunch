@@ -147,9 +147,12 @@ class Fingerprint
             that._addToMap(targetPath, path.join(config.paths.public, targetNewName.substring(config.paths.public.length)))
           else
             targetNewName = that.map[targetPath]
+          console.log 'targetNewName ' + targetNewName
 
           # Rename unhashed filePath by the hashed new name
           data.fileContent = data.fileContent.replace(match, "url('" + unixify(targetNewName.substring(options.publicRootPath.length)) + finalHash + "')")
+          console.log 'data.fileContent'
+          console.log data.fileContent
         else if options.verbose
           console.log 'no such file : ' + (that.map[targetPath] || targetPath)
       # END forEach
