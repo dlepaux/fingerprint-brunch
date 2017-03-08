@@ -67,6 +67,7 @@ fingerprintAutoReplaceFilename = (filename) ->
 
 fingerprintAutoReplaceFileExists = (filename) ->
   pathFile = fingerprintAutoReplaceFilename(filename)
+  console.log fs.readFileSync(pathFile).toString()
   fs.existsSync(pathFile)
 
 setupFakeFileSystem = ->
@@ -221,3 +222,4 @@ describe 'Fingerprint', ->
       fingerprint.onCompile(GENERATED_FILES)
       expect(fingerprintAutoReplaceFileExists('css/sample.css')).to.be.true
       expect(fingerprintAutoReplaceFileExists('css/sample-2.css')).to.be.true
+      
