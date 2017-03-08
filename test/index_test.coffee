@@ -220,3 +220,4 @@ describe 'Fingerprint', ->
       fingerprint.options.autoReplaceAndHash = true
       fingerprint.onCompile(GENERATED_FILES)
       expect(fingerprintAutoReplaceFileExists('css/sample.css')).to.be.true
+      expect(fingerprintAutoReplaceFileExists('css/sample-2.css')).to.be.true
