@@ -73,6 +73,7 @@ class Fingerprint
         console.log filePath
         if @options.autoReplaceAndHash and fs.existsSync(filePath)
           # Fingerprint sub files
+          console.log 'findAndREPLACE'
           @_findAndReplaceSubAssets(filePath)
         else
           @_makeCoffee(filePath)
