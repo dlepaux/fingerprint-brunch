@@ -118,6 +118,8 @@ class Fingerprint
 
     # Return content of filePath and match pattern
     data = @_getAssetsInner(filePath)
+    console.log 'data'
+    console.log data
     if data.filePaths != null
       Object.keys(data.filePaths).forEach (key) ->
 
