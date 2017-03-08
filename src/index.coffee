@@ -69,11 +69,8 @@ class Fingerprint
 
       # Hash only file in targets option key
       if @options.targets == '*' or (base + ext) in @options.targets
-        console.log 'filePath'
-        console.log filePath
         if @options.autoReplaceAndHash and fs.existsSync(filePath)
           # Fingerprint sub files
-          console.log 'findAndREPLACE'
           @_findAndReplaceSubAssets(filePath)
         else
           @_makeCoffee(filePath)
@@ -142,9 +139,8 @@ class Fingerprint
 
         # Target is local and exist?
         console.log 'that.map'
-        console.log that.map
         if fs.existsSync(that.map[targetPath] || targetPath)
-
+          console.log targetPath + ' is exist !'
           # Adding to map
           if typeof(that.map[targetPath]) == 'undefined'
             targetNewName = that._fingerprintFile(targetPath)
