@@ -18,10 +18,10 @@
     "url": "git@github.com:dlepaux/fingerprint-brunch.git"
   },
   "devDependencies": {
-    "coffee-script": "~1.9.0",
-    "chai": "~1.10.0",
-    "mocha": "~2.1.0",
-    "fs-extra": "~0.16.3"
+    "coffee-script": "~1.12.7",
+    "chai": "~4.1.2",
+    "mocha": "~3.5.3",
+    "fs-extra": "~4.0.2"
   },
   "license": "MIT"
 }
