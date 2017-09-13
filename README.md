@@ -1,5 +1,7 @@
 # fingerprint-brunch [![Build Status][travis-badge]][travis] [![Join the chat at https://gitter.im/dlepaux/fingerprint-brunch](https://badges.gitter.im/dlepaux/fingerprint-brunch.svg)](https://gitter.im/dlepaux/fingerprint-brunch?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/dlepaux/fingerprint-brunch.svg)](https://greenkeeper.io/)
+
 A [Brunch][] plugin witch rename assets with a SHA for fingerprinted it.
 
 Stable version are : [v1.0.11][] and [v1.2.5][]
