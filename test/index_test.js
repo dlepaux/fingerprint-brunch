@@ -425,6 +425,31 @@ describe('Fingerprint', () => {
     });
   });
 
+  // Making coffee
+  describe('Fingerprinting (non sub assets)', function() {
+    beforeEach((done) => setupFakeFileSystem(() => done()));
+
+    it('should fingerprint file', function() {
+      fingerprint.options.alwaysRun = true;
+      const sourceFullPath = path.join(__dirname, 'public', 'css', 'sample.css');
+      fingerprint._makeCoffee(sourceFullPath, (filePath) => {
+        expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal('undefined');
+        expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal(undefined);
+        expect(fingerprint.map[fingerprint.unixify(filePath)]).to.be.not.equal(fingerprint.unixify(filePath));
+      });
+    });
+
+    it('should not fingerprint file', function() {
+      fingerprint.options.alwaysRun = false;
+      fingerprint._makeCoffee(path.join(__dirname, 'public', 'css', 'sample.css'), (filePath) => {
+        expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal('undefined');
+        expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal(undefined);
+        expect(fingerprint.map[fingerprint.unixify(filePath)]).to.be.equal(fingerprint.unixify(filePath));  
+      });
+    });
+  });
+  
+
 
   // Environment detection
   describe('Environment detection', function() {
@@ -448,7 +473,7 @@ describe('Fingerprint', () => {
   });
 
   // Matching assets to hash
-  describe('AutoReplace inner assets', function() {
+  describe('AutoReplace sub assets', function() {
     beforeEach((done) => setupFakeFileSystem(() => done()));
 
     it('extract url from css "url()" attribute', function() {
@@ -459,11 +484,29 @@ describe('Fingerprint', () => {
       fingerprint.options.alwaysRun = true;
       fingerprint.options.autoReplaceAndHash = true;
       fingerprint._findAndReplaceSubAssetsAsync(path.join(__dirname, 'public', 'css', 'sample.css'), (filePath) => {
-        expect(true).to.be.true;
+        // Expect parent file well fingerprinted
+        expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal('undefined');
+        expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal(undefined);
+        expect(fingerprint.map[fingerprint.unixify(filePath)]).to.be.not.equal(fingerprint.unixify(filePath));  
+        
+        // Expect children file well fingerprinted too
+        filePath = path.join('test', 'public', 'img', 'troll.png');
+        expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal('undefined');
+        expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal(undefined);
+        expect(fingerprint.map[fingerprint.unixify(filePath)]).to.be.not.equal(fingerprint.unixify(filePath));  
       });
-      //expect(fingerprintAutoReplaceFileExists('css/sample.css')).to.be.true;
-      //expect(fingerprintAutoReplaceFileExists('css/sample-2.css')).to.be.true;
     });
+
+    /*it('autoReplace in css sample (without sub assets)', function() {
+      fingerprint.options.alwaysRun = true;
+      fingerprint.options.autoReplaceAndHash = true;
+      fingerprint._findAndReplaceSubAssetsAsync(path.join(__dirname, 'public', 'css', 'sample-3.css'), (filePath) => {
+        // Expect parent file well fingerprinted
+        expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal('undefined');
+        expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal(undefined);
+        expect(fingerprint.map[fingerprint.unixify(filePath)]).to.be.not.equal(fingerprint.unixify(filePath));  
+      });
+    });*/
   });
 });
       
