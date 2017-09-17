@@ -170,8 +170,6 @@ class Fingerprint {
               // Rename unhashed filePath by the hashed new name
               data.fileContent = data.fileContent.replace(match, `url('${that.unixify(targetNewName.substring(that.options.publicRootPath.length))}${finalHash}')`);
             }
-          } else if (that.options.verbose) {
-            return console.log(`no such file : ${that.map[targetPath] || targetPath}`);
           }
         });
         // END forEach

@@ -497,7 +497,32 @@ describe('Fingerprint', () => {
       });
     });
 
-    /*it('autoReplace in css sample (without sub assets)', function() {
+    it('autoReplace in css sample (with doublon in map)', function() {
+      fingerprint.options.alwaysRun = true;
+      fingerprint.options.autoReplaceAndHash = true;
+      fingerprint._findAndReplaceSubAssetsAsync(path.join(__dirname, 'public', 'css', 'sample-2.css'), (filePath) => {
+        // Expect parent file well fingerprinted
+        expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal('undefined');
+        expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal(undefined);
+        expect(fingerprint.map[fingerprint.unixify(filePath)]).to.be.not.equal(fingerprint.unixify(filePath));  
+        
+        // Expect children file well fingerprinted too
+        filePath = path.join('test', 'public', 'img', 'troll.png');
+        expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal('undefined');
+        expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal(undefined);
+        expect(fingerprint.map[fingerprint.unixify(filePath)]).to.be.not.equal(fingerprint.unixify(filePath));
+
+        // troll.png is in doublon
+        fingerprint._findAndReplaceSubAssetsAsync(path.join(__dirname, 'public', 'css', 'sample.css'), (filePath) => {
+          // Expect parent file well fingerprinted
+          expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal('undefined');
+          expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal(undefined);
+          expect(fingerprint.map[fingerprint.unixify(filePath)]).to.be.not.equal(fingerprint.unixify(filePath));
+        });
+      });
+    });
+
+    it('autoReplace in css sample (without sub assets)', function() {
       fingerprint.options.alwaysRun = true;
       fingerprint.options.autoReplaceAndHash = true;
       fingerprint._findAndReplaceSubAssetsAsync(path.join(__dirname, 'public', 'css', 'sample-3.css'), (filePath) => {
@@ -506,7 +531,7 @@ describe('Fingerprint', () => {
         expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal(undefined);
         expect(fingerprint.map[fingerprint.unixify(filePath)]).to.be.not.equal(fingerprint.unixify(filePath));  
       });
-    });*/
+    });
   });
 });
       
