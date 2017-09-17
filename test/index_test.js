@@ -487,6 +487,7 @@ describe('Fingerprint', () => {
         expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal(undefined);
         expect(fingerprint.map[fingerprint.unixify(filePath)]).to.be.not.equal(fingerprint.unixify(filePath));  
         
+        console.log(fingerprint.map);
         // Expect children file well fingerprinted too
         //filePath = path.join('test', 'public', 'img', 'troll.png');
         //expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal('undefined');
