@@ -5,20 +5,20 @@ const fse         = require('fs-extra');
 const path        = require('path');
 
 const ASSETS = {
-  'css/sample-2.css': 'css/sample-2-4e2e5ab7.css',
+  'css/sample-2.css': 'css/sample-2-7a6ebaa2.css',
   'css/sample.css': 'css/sample-2df77a0c.css',
   'js/sample.js': 'js/sample-5d19fc29.js'
 };
 
 const MAP = {
-  'public/css/sample-2.css': 'public/css/sample-2-b99e5dba.css',
+  'public/css/sample-2.css': 'public/css/sample-2-7a6ebaa2.css',
   'public/css/sample.css': 'public/css/sample-24f9b0ba.css',
   'public/js/sample.js': 'public/js/sample-5d19fc29.js'
 };
 
 const AUTOREPLACE_ASSETS = {
   'css/sample.css': 'css/sample-24f9b0ba.css',
-  'css/sample-2.css': 'css/sample-2-b99e5dba.css',
+  'css/sample-2.css': 'css/sample-2-7a6ebaa2.css',
   'img/troll.png': 'img/troll-5f2d5cbe.png',
   'fonts/font.eot': 'fonts/font-45d860a3.eot',
   'fonts/font.woff': 'fonts/font-6ced13b9.woff',
@@ -32,7 +32,7 @@ const AUTOREPLACE_ASSETS = {
 
 const AUTOREPLACE_MAP = {
   'public/css/sample.css': 'public/css/sample-24f9b0ba.css',
-  'public/css/sample-2.css': 'public/css/sample-2-b99e5dba.css',
+  'public/css/sample-2.css': 'public/css/sample-2-7a6ebaa2.css',
   'public/img/troll.png': 'public/img/troll-5f2d5cbe.png',
   'public/fonts/font.eot': 'public/fonts/font-45d860a3.eot',
   'public/fonts/font.woff': 'public/fonts/font-6ced13b9.woff',
