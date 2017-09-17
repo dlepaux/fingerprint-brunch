@@ -2,8 +2,6 @@
 
 A [Brunch][] plugin witch rename assets with a SHA for fingerprinted it.
 
-Stable version are : [v1.0.11][] and [v1.2.5][]
-
 - [Installation](#installation)
 - [Usage](#usage)
 - [Options](#options)
@@ -182,5 +180,28 @@ The Software is provided “as is”, without warranty of any kind, express or i
 [Brunch]: http://brunch.io
 [travis]: https://travis-ci.org/dlepaux/fingerprint-brunch
 [travis-badge]: https://img.shields.io/travis/dlepaux/fingerprint-brunch.svg?style=flat
-[v1.0.11]: https://github.com/dlepaux/fingerprint-brunch/releases/tag/v1.0.11
-[v1.2.5]: https://github.com/dlepaux/fingerprint-brunch/releases/tag/v1.2.5
+
+
+# Rewrite (Async)
+
+- onCompile
+  - fs.exists l.75
+  - fs.exists l.85
+- _findAndReplaceSubAssets
+  - fs.exists l.155
+  - fs.writeFile l.178
+  - fs.rename l.180
+- _getAssetsInner
+  - fs.readFile l.188
+- _clearOldFiles
+  - fs.readdir l.221
+  - fs.unlink l.226
+- _fingerprintCompose
+  - fs.readFile l.248
+- _fingerprintFile
+  - fs.rename l.264
+- _removeManifest
+  - fs.exists l.270
+  - fs.unlink l.270
+- _writeManifest
+  - fs.readFile l.284
