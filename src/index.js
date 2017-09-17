@@ -46,6 +46,8 @@ class Fingerprint {
   }
 
   constructor(config) {
+    // Get Brunch global config
+    this.config = config;
     // Merge config into this.options
     Object.assign(this.options, config && config.plugins && config.plugins.fingerprint || {});
   }
@@ -97,7 +99,7 @@ class Fingerprint {
     let fileNewName = filePath;
     if (this._isFingerprintable()) {
       // Just fingerprint targets
-      this._fingerprintFileAsync(filePath, (fileNewName) => {
+      this._fingerprintFileAsync(filePath, (err, fileNewName) => {
         this._addToMap(filePath, fileNewName);
         done && done(filePath);
       });
@@ -131,15 +133,12 @@ class Fingerprint {
 
   // Find dependencied like image, fonts.. Hash them and rewrite files (CSS only for now)
   _findAndReplaceSubAssetsAsync(filePath, done) {
-    // Manage subFunction for 'this'
-    const { config } = this;
-    const { options } = this;
     const that = this;
 
     // Return content of filePath and match pattern
     this._matchAssetsPattern(filePath, (data) => {
       if (data.filePaths !== null) {
-        Object.keys(data.filePaths).forEach(function(key) {
+        Object.keys(data.filePaths).forEach( function(key) {
 
           // Save matched string and extract filePath
           const match = new RegExp(that._escapeStringToRegex(data.filePaths[key]), 'g');
@@ -147,30 +146,31 @@ class Fingerprint {
 
           // Save Hash from filePath and remove it from filePath
           const finalHash = that._extractHashFromURL(data.filePaths[key]);
-          data.filePaths[key] = data.filePaths[key].replace(options.paramettersPattern, '');
+          data.filePaths[key] = data.filePaths[key].replace(that.options.paramettersPattern, '');
 
           // Relative path with '../' is replaced with '/' for bootstrap font link
           if (data.filePaths[key].indexOf('../') === 0) {
             data.filePaths[key] = data.filePaths[key].substring(2);
           }
 
-          const targetPath = that.unixify(path.join(options.publicRootPath, data.filePaths[key]));
+          const targetPath = that.unixify(path.join(that.options.publicRootPath, data.filePaths[key]));
 
           // Target is local and exist?
           if (that.map[targetPath] || targetPath) {
             // Adding to map
             let targetNewName;
             if (typeof(that.map[targetPath]) === 'undefined') {
-              that._fingerprintFileAsync(targetPath, (targetNewName) => {
-                that._addToMap(targetPath, path.join(config.paths.public, targetNewName.substring(config.paths.public.length)));
+              that._fingerprintFileAsync(targetPath, (err, targetNewName) => {
+                that._addToMap(targetPath, path.join(that.config.paths.public, targetNewName.substring(that.config.paths.public.length)));
+                // Rename unhashed filePath by the hashed new name
+                data.fileContent = data.fileContent.replace(match, `url('${that.unixify(targetNewName.substring(that.options.publicRootPath.length))}${finalHash}')`);
               });
             } else {
               targetNewName = that.map[targetPath];
+              // Rename unhashed filePath by the hashed new name
+              data.fileContent = data.fileContent.replace(match, `url('${that.unixify(targetNewName.substring(that.options.publicRootPath.length))}${finalHash}')`);
             }
-
-            // Rename unhashed filePath by the hashed new name
-            return data.fileContent = data.fileContent.replace(match, `url('${that.unixify(targetNewName.substring(options.publicRootPath.length))}${finalHash}')`);
-          } else if (options.verbose) {
+          } else if (that.options.verbose) {
             return console.log(`no such file : ${that.map[targetPath] || targetPath}`);
           }
         });
@@ -184,8 +184,8 @@ class Fingerprint {
         // Write file to generate and rename it
         fs.writeFile(filePath, data.fileContent, 'utf8', (err) => {
           if (err) throw new Error(err);
-          console.log('filePath : ', filePath);
-          console.log('modifiedFilePath : ', modifiedFilePath);
+          //console.log('filePath : ', filePath);
+          //console.log('modifiedFilePath : ', modifiedFilePath);
           fs.rename(filePath, modifiedFilePath, () => {
             this._addToMap(filePath, modifiedFilePath);
             done && done(filePath);
@@ -297,8 +297,8 @@ class Fingerprint {
     if (this._isFingerprintable() || this.options.manifestGenerationForce) {
       const output = JSON.stringify(map, null, "  ");
       fs.writeFile(this.options.manifest, output, (err) => {
-        console.log(err);
-        if (err) done(err);
+        //console.log(err);
+        if (err) return done && done(err);
         done && done();
       });
     } else {
