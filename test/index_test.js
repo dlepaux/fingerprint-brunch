@@ -52,6 +52,7 @@ const GENERATED_FILES = [
 
 const fingerprintFileExists = (filename, done) => {
   filename = path.join(__dirname, 'public', ASSETS[filename] || filename);
+  console.log(filename);
   fs.access(filename, fs.constants.R_OK, (err) => {
     done && done(err ? false : true);
   });
