@@ -322,6 +322,17 @@ describe('Fingerprint', () => {
       });
     });
 
+    it('create but not written', function() {
+      fingerprint.options.manifestGenerationForce = false;
+      fingerprint.options.environments = [];
+      fingerprint.options.alwaysRun = false;
+      fingerprint._createManifestAsync(MAP, (err) => {
+        fs.access(fingerprint.options.manifest, fs.constants.R_OK, (err) => {
+          expect(!err?true:false).to.be.false;
+        });
+      });
+    });
+
     it('check manifest is not exist on init', () => {
       fs.access(fingerprint.options.manifest, fs.constants.R_OK, (err) => {
         expect(!err?true:false).to.be.false;

@@ -148,7 +148,7 @@ class Fingerprint {
           const finalHash = that._extractHashFromURL(data.filePaths[key]);
           data.filePaths[key] = data.filePaths[key].replace(that.options.paramettersPattern, '');
 
-          // Relative path with '../' is replaced with '/' for bootstrap font link
+          // Relative path with '../' at FIRST position is replaced with '/' for bootstrap font link
           if (data.filePaths[key].indexOf('../') === 0) {
             data.filePaths[key] = data.filePaths[key].substring(2);
           }
