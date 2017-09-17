@@ -229,31 +229,28 @@ describe('Fingerprint', () => {
     beforeEach((done) => setupFakeFileSystem(() => done()));
 
     it('sample.js with fingerprint', function() {
-      fingerprint._fingerprintFileAsync(path.join(__dirname, 'public', 'js', 'sample.js'), (err, data) => {
-        fingerprintFileExists('js/sample.js', (isExist) => {
-          expect(isExist).to.be.true;
-        });
+      const fileName = path.join(__dirname, 'public', 'js', 'sample.js');
+      fingerprint._fingerprintFileAsync(fileName, (err, fileNewName) => {
+        expect(fileName).to.be.not.equal(fileNewName);
       });
     });
 
     it('sample.css with fingerprint', function() {
-      fingerprint._fingerprintFileAsync(path.join(__dirname, 'public', 'css', 'sample.css'), (err, data) => {
-        fingerprintFileExists('css/sample.css', (isExist) => {
-          expect(isExist).to.be.true;
-        });
+      const fileName = path.join(__dirname, 'public', 'css', 'sample.css');
+      fingerprint._fingerprintFileAsync(fileName, (err, fileNewName) => {
+        expect(fileName).to.be.not.equal(fileNewName);
       });
     });
 
     it('sample-2.css with fingerprint', function() {
-      fingerprint._fingerprintFileAsync(path.join(__dirname, 'public', 'css', 'sample-2.css'), (err, data) => {
-        fingerprintFileExists('css/sample-2.css', (isExist) => {
-          expect(isExist).to.be.true;
-        });
+      const fileName = path.join(__dirname, 'public', 'css', 'sample-2.css');
+      fingerprint._fingerprintFileAsync(fileName, (err, fileNewName) => {
+        expect(fileName).to.be.not.equal(fileNewName);
       });
     });
 
     it('with wrong filePath', function() {
-      fingerprint._fingerprintFileAsync(path.join(__dirname, 'this', 'file', 'dont', 'exist.css'), (err, data) => {
+      fingerprint._fingerprintFileAsync(path.join(__dirname, 'this', 'file', 'dont', 'exist.css'), (err, fileNewName) => {
         expect(err).to.be.instanceOf(Error)
         expect(err).to.not.equal(null);
       });
