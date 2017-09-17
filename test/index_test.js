@@ -93,7 +93,7 @@ describe('Fingerprint', () => {
   );
 
   // executed after each test
-  after((done) => {
+  afterEach((done) => {
     fse.remove(path.join(__dirname, 'public'), () => {
       done()
     });
@@ -363,9 +363,13 @@ describe('Fingerprint', () => {
         });
       });
 
-      it('merging an non existing one with forcing', function() {
+      it('merging an non existing one with forcing (should create it)', function() {
         fingerprint.options.manifestGenerationForce = true;
-        fingerprint._mergeManifestAsync(() => {
+        // Add key/value to map
+        Object.keys(MAP).forEach( function(key) {
+          fingerprint._addToMap(key, MAP[key]);
+        });
+        fingerprint._mergeManifestAsync((err) => {
           fs.access(fingerprint.options.manifest, fs.constants.R_OK, (err) => {
             expect(!err?true:false).to.be.true;
           });
@@ -374,12 +378,11 @@ describe('Fingerprint', () => {
 
       it('merging an existing manifest', function() {
         fingerprint.options.manifestGenerationForce = true;
-
+        // Add key/value to map
         Object.keys(MAP).forEach( function(key) {
           fingerprint._addToMap(key, MAP[key]);
         });
-
-        fs.writeFile(fingerprint.options.manifest, '{"hello/world":"hello/world"}', 'utf8', (err) => {
+        fs.writeFile(fingerprint.options.manifest, '{"hello/world":"hello/world"}', (err) => {
           fingerprint._mergeManifestAsync(() => {
             fs.readFile(fingerprint.options.manifest, (err, data) => {
               expect(!err?true:false).to.be.true;
@@ -389,8 +392,36 @@ describe('Fingerprint', () => {
           });
         });
       });
+    });
 
-        //fingerprint.options.manifestGenerationForce = false;
+    describe('_writeAsync', function() {
+      beforeEach((done) => setupFakeFileSystem(() => done()));
+
+      it('write manifest with createManifest', function() {
+        Object.keys(MAP).forEach( function(key) {
+          fingerprint._addToMap(key, MAP[key]);
+        });
+
+        fingerprint._writeManifestAsync(() => {
+          fs.access(fingerprint.options.manifest, fs.constants.R_OK, (err) => {
+            expect(!err?true:false).to.be.true;
+          });
+        });
+      });
+
+      it('write manifest with mergeManifest', function() {
+        Object.keys(MAP).forEach( function(key) {
+          fingerprint._addToMap(key, MAP[key]);
+        });
+
+        fs.writeFile(fingerprint.options.manifest, '{"hello/world":"hello/world"}', 'utf8', (err) => {
+          fingerprint._writeManifestAsync(() => {
+            fs.access(fingerprint.options.manifest, fs.constants.R_OK, (err) => {
+              expect(!err?true:false).to.be.true;
+            });
+          });
+        });
+      });
     });
   });
 

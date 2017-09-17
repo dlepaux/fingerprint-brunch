@@ -262,7 +262,7 @@ class Fingerprint {
   // Rename file with his new fingerprint
   _fingerprintFileAsync(filePath, done) {
     const that = this;
-    fs.readFile(filePath, 'utf8', (err, data) => {
+    fs.readFile(filePath, (err, data) => {
       if (err) return done(err); // filePath + " does not exist !"
       const fileNewName = that._fingerprintCompose(filePath, data);
       // Rename file, with hash
@@ -310,7 +310,7 @@ class Fingerprint {
   _mergeManifestAsync(done) {
     const that = this;
     if (this._isFingerprintable() || this.options.manifestGenerationForce) {
-      fs.readFile(this.options.manifest, 'utf8', (err, data) => {
+      fs.readFile(this.options.manifest, (err, data) => {
         if (err) return that._createManifestAsync(done);
         let manifest = JSON.parse(data);
         // Merge previous manifest with map
