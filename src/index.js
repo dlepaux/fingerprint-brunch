@@ -49,7 +49,7 @@ class Fingerprint {
     // Get Brunch global config
     this.config = config;
     // Merge config into this.options
-    Object.assign(this.options, config && config.plugins && config.plugins.fingerprint || {});
+    this.options = Object.assign(this.options, config && config.plugins && config.plugins.fingerprint || {});
   }
 
   // Main method
@@ -314,9 +314,11 @@ class Fingerprint {
         if (err) return that._createManifestAsync(done);
         let manifest = JSON.parse(data);
         // Merge previous manifest with map
-        for (let k in that.map) { manifest[k] = that.map[k]; }
+        manifest = Object.assign(manifest, that.map);
         that._createManifestAsync(manifest, done);
       });
+    } else {
+      done && done();
     }
   }
 }

@@ -283,76 +283,114 @@ describe('Fingerprint', () => {
   */
 
   // Manifest
-  describe('Write Manifest', function() {
-    beforeEach((done) => setupFakeFileSystem(() => done()));
+  describe('Manifest', function() {
+    describe('The mapping', function() {
+      beforeEach((done) => setupFakeFileSystem(() => done()));
 
-    it('create with param (MAP)', function() {
-      fingerprint._createManifestAsync(MAP, (err) => {
-        fs.access(fingerprint.options.manifest, fs.constants.R_OK, (err) => {
-          expect(!err?true:false).to.be.true;
+      it('add pair to map', function() {
+        const sourcePath = path.join(fingerprint.options.publicRootPath, 'test/test.js');
+        const destPath = path.join(fingerprint.options.publicRootPath, 'test/test-123456.js');
+        fingerprint._addToMap(sourcePath, destPath);
+        expect(fingerprint.map[fingerprint.unixify(sourcePath)]).to.be.equal(fingerprint.unixify(destPath));
+      });
+    });
+
+    describe('_createAsync', function() {
+      beforeEach((done) => setupFakeFileSystem(() => done()));
+
+      it('create with param (MAP)', function() {
+        fingerprint._createManifestAsync(MAP, (err) => {
+          fs.access(fingerprint.options.manifest, fs.constants.R_OK, (err) => {
+            expect(!err?true:false).to.be.true;
+          });
+        });
+      });
+
+      it('create with this.map setted', function() {
+        fingerprint.map = MAP;
+        fingerprint._createManifestAsync((err) => {
+          fs.access(fingerprint.options.manifest, fs.constants.R_OK, (err) => {
+            expect(!err?true:false).to.be.true;
+          });
+        });
+      });
+
+      it('create (forced)', function() {
+        fingerprint.options.manifestGenerationForce = true;
+        fingerprint.options.environments = [];
+        fingerprint.options.alwaysRun = false;
+        fingerprint._createManifestAsync(MAP, (err) => {
+          fs.access(fingerprint.options.manifest, fs.constants.R_OK, (err) => {
+            expect(!err?true:false).to.be.true;
+          });
+        });
+      });
+
+      it('create with a unvalid name (?)', function() {
+        fingerprint.options.manifest = './test/public/ass?ets.json';
+        fingerprint._createManifestAsync(MAP, (err) => {
+          expect(err).to.be.instanceOf(Error)
+          expect(err).to.not.equal(null);
+        });
+      });
+
+      it('create MAP passed, but not written', function() {
+        fingerprint.options.manifestGenerationForce = false;
+        fingerprint.options.environments = [];
+        fingerprint.options.alwaysRun = false;
+        fingerprint._createManifestAsync(MAP, (err) => {
+          fs.access(fingerprint.options.manifest, fs.constants.R_OK, (err) => {
+            expect(!err?true:false).to.be.false;
+          });
         });
       });
     });
 
-    it('create with this.map setted', function() {
-      fingerprint.map = MAP;
-      fingerprint._createManifestAsync((err) => {
-        fs.access(fingerprint.options.manifest, fs.constants.R_OK, (err) => {
-          expect(!err?true:false).to.be.true;
-        });
-      });
-    });
+    describe('_mergeAsync', function() {
+      beforeEach((done) => setupFakeFileSystem(() => done()));
 
-    it('create (forced)', function() {
-      fingerprint.options.manifestGenerationForce = true;
-      fingerprint.options.environments = [];
-      fingerprint.options.alwaysRun = false;
-      fingerprint._createManifestAsync(MAP, (err) => {
-        fs.access(fingerprint.options.manifest, fs.constants.R_OK, (err) => {
-          expect(!err?true:false).to.be.true;
-        });
-      });
-    });
-
-    it('create with wrong manifest path', function() {
-      fingerprint.options.manifest = './test/public/ass?ets.json';
-      fingerprint._createManifestAsync(MAP, (err) => {
-        expect(err).to.be.instanceOf(Error)
-        expect(err).to.not.equal(null);
-      });
-    });
-
-    it('create but not written', function() {
-      fingerprint.options.manifestGenerationForce = false;
-      fingerprint.options.environments = [];
-      fingerprint.options.alwaysRun = false;
-      fingerprint._createManifestAsync(MAP, (err) => {
+      it('check manifest is not exist on init (access should be false)', () => {
         fs.access(fingerprint.options.manifest, fs.constants.R_OK, (err) => {
           expect(!err?true:false).to.be.false;
         });
       });
-    });
 
-    it('check manifest is not exist on init', () => {
-      fs.access(fingerprint.options.manifest, fs.constants.R_OK, (err) => {
-        expect(!err?true:false).to.be.false;
-      });
-    });
-
-    it('merging an already existing one', function() {
-      fingerprint._mergeManifestAsync(MAP, () => {
-        fs.access(fingerprint.options.manifest, fs.constants.R_OK, (err) => {
-          expect(!err?true:false).to.be.true;
+      it('merging an non existing one (access should be false)', function() {
+        fingerprint._mergeManifestAsync(() => {
+          fs.access(fingerprint.options.manifest, fs.constants.R_OK, (err) => {
+            expect(!err?true:false).to.be.false;
+          });
         });
       });
-    });
 
+      it('merging an non existing one with forcing', function() {
+        fingerprint.options.manifestGenerationForce = true;
+        fingerprint._mergeManifestAsync(() => {
+          fs.access(fingerprint.options.manifest, fs.constants.R_OK, (err) => {
+            expect(!err?true:false).to.be.true;
+          });
+        });
+      });
 
-    it('add pair to map', function() {
-      const sourcePath = path.join(fingerprint.options.publicRootPath, 'test/test.js');
-      const destPath = path.join(fingerprint.options.publicRootPath, 'test/test-123456.js');
-      fingerprint._addToMap(sourcePath, destPath);
-      expect(fingerprint.map[fingerprint.unixify(sourcePath)]).to.be.equal(fingerprint.unixify(destPath));
+      it('merging an existing manifest', function() {
+        fingerprint.options.manifestGenerationForce = true;
+
+        Object.keys(MAP).forEach( function(key) {
+          fingerprint._addToMap(key, MAP[key]);
+        });
+
+        fs.writeFile(fingerprint.options.manifest, '{"hello/world":"hello/world"}', 'utf8', (err) => {
+          fingerprint._mergeManifestAsync(() => {
+            fs.readFile(fingerprint.options.manifest, (err, data) => {
+              expect(!err?true:false).to.be.true;
+              data = JSON.parse(data.toString());
+              expect(data['hello/world']).to.be.equal('hello/world');
+            });
+          });
+        });
+      });
+
+        //fingerprint.options.manifestGenerationForce = false;
     });
   });
 
