@@ -189,6 +189,7 @@ class Fingerprint {
           });
         });
       } else {
+        console.log('no sub assets detected');
         return this._makeCoffee(filePath, done);
       }
     });
