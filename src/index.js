@@ -56,10 +56,9 @@ class Fingerprint {
   onCompile(generatedFiles, callback) {
     // onCompile is ended
     const onCompileEnded = (filePath) => {
-      console.log('This file is fingerprinted with success : ', filePath);
       // Make array for manifest
       return this._writeManifestAsync(() => {
-        callback && callback();
+        callback && callback(filePath);
       });
     }
 

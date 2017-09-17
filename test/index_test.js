@@ -533,5 +533,30 @@ describe('Fingerprint', () => {
       });
     });
   });
+
+  // Matching assets to hash
+  describe('Full Test with onCompile', function() {
+    beforeEach((done) => setupFakeFileSystem(() => done()));
+
+    it('test with one file (with autoReplace)', function() {
+      fingerprint.onCompile([{path: path.join(__dirname, 'public', 'js', 'sample.js')}], (filePath) => {
+        expect(filePath).to.be.not.null();
+      });
+    });
+
+    it('test with one file (without autoReplace)', function() {
+      fingerprint.options.autoReplaceAndHash = false;
+      fingerprint.onCompile([{path: path.join(__dirname, 'public', 'js', 'sample.js')}], (filePath) => {
+        expect(filePath).to.be.not.null();
+      });
+    });
+
+    it('test with one file (without autoClear)', function() {
+      fingerprint.options.autoClearOldFiles = true;
+      fingerprint.onCompile([{path: path.join(__dirname, 'public', 'js', 'sample.js')}], (filePath) => {
+        expect(filePath).to.be.not.null();
+      });
+    });
+  });
 });
       
