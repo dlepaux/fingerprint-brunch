@@ -325,7 +325,7 @@ describe('Fingerprint', () => {
       });
 
       it('create with a unvalid name (?)', function() {
-        fingerprint.options.manifest = './test/public/ass?ets.json';
+        fingerprint.options.manifest = './test/public/ass\0ets.json';
         fingerprint._createManifestAsync(MAP, (err) => {
           expect(err).to.be.instanceOf(Error)
           expect(err).to.not.equal(null);
