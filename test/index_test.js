@@ -12,12 +12,12 @@ const ASSETS = {
 
 const MAP = {
   'public/css/sample-2.css': 'public/css/sample-2-7a6ebaa2.css',
-  'public/css/sample.css': 'public/css/sample-24f9b0ba.css',
+  'public/css/sample.css': 'public/css/sample-2df77a0c.css',
   'public/js/sample.js': 'public/js/sample-5d19fc29.js'
 };
 
 const AUTOREPLACE_ASSETS = {
-  'css/sample.css': 'css/sample-24f9b0ba.css',
+  'css/sample.css': 'css/sample-2df77a0c.css',
   'css/sample-2.css': 'css/sample-2-7a6ebaa2.css',
   'img/troll.png': 'img/troll-5f2d5cbe.png',
   'fonts/font.eot': 'fonts/font-45d860a3.eot',
@@ -31,7 +31,7 @@ const AUTOREPLACE_ASSETS = {
 };
 
 const AUTOREPLACE_MAP = {
-  'public/css/sample.css': 'public/css/sample-24f9b0ba.css',
+  'public/css/sample.css': 'public/css/sample-2df77a0c.css',
   'public/css/sample-2.css': 'public/css/sample-2-7a6ebaa2.css',
   'public/img/troll.png': 'public/img/troll-5f2d5cbe.png',
   'public/fonts/font.eot': 'public/fonts/font-45d860a3.eot',
