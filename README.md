@@ -147,13 +147,6 @@ Default: `/(\?|\&|\#)([^=]?)([^&]*)/gm`
 
 Match hash and parameters in an URL
 
-### verbose
-
-Type: `Boolean`
-Default: `false`
-
-Return more info on compile
-
 
 ## <a name="testing"></a> Testing / Issues
 

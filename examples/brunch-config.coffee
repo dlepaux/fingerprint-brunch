@@ -26,9 +26,10 @@ exports.config =
       # Mapping file so your server can serve the right files
       targets: '*'
       environments: ['production']
-      alwaysRun: false
+      alwaysRun: true
       manifestGenerationForce: true
+      autoReplaceAndHash: true
       manifest: './assets.json'
       srcBasePath: 'public'
       destBasePath: 'public'
-      autoClearOldFiles: false
+      autoClearOldFiles: true

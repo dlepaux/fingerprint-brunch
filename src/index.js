@@ -37,9 +37,6 @@ class Fingerprint {
       // URL parameters pattern
       // authorized chars : ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~:/?#[]@!$&'()*+,;=
       paramettersPattern: /(\?|\&|\#)([^=]?)([^&]*)/gm,
-
-      // verbose flag
-      verbose: false
     };
     // Map of assets
     this.prototype.map = {};
