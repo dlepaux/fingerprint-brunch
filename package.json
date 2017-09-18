@@ -1,7 +1,7 @@
 {
   "name": "fingerprint-brunch",
-  "version": "1.2.8",
-  "description": "A Brunch plugin for cache busting assets",
+  "version": "2.0.0",
+  "description": "A Brunch JS plugin for cache busting assets",
   "author": "David Lepaux <d.lepaux@gmail.com>",
   "keywords": [
     "fingerprint",

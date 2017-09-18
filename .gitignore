@@ -5,4 +5,4 @@ npm-debug.log
 coverage
 test/public
 assets.json
-example/public
+examples/public/*
