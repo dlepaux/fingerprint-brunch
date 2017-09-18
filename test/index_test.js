@@ -177,48 +177,54 @@ describe('Fingerprint', () => {
       })
     });
 
-    it('sample.js well removed', function() {
+    it('sample.js well removed', function(done) {
       fingerprint._clearOldFilesAsync(path.join(__dirname, 'public', 'js'), 'sample', '.js', (err) => {
         fingerprintFileExists('js/sample.js', (isExist) => {
           expect(isExist).to.be.false;
+          done();
         });
       });
     });
 
-    it('sample.css is exists', function() {
+    it('sample.css is exists', function(done) {
       const pathFile = path.join(__dirname, 'public', 'css/sample.css');
       fs.access(pathFile, fs.constants.R_OK, (err) => {
         expect(!err?true:false).to.be.true;
+        done();
       });
     });
 
-    it('sample.css well removed', function() {
+    it('sample.css well removed', function(done) {
       fingerprint._clearOldFilesAsync(path.join(__dirname, 'public', 'css'), 'sample', '.css', (err) => {
         fingerprintFileExists('css/sample.css', (isExist) => {
           expect(isExist).to.be.false;
+          done();
         });
       });
     });
 
-    it('sample-2.css is exists', function() {
+    it('sample-2.css is exists', function(done) {
       const pathFile = path.join(__dirname, 'public', 'css/sample-2.css');
       fs.access(pathFile, fs.constants.R_OK, (err) => {
         expect(!err?true:false).to.be.true;
+        done();
       });
     });
 
-    it('sample-2.css well removed', function() {
+    it('sample-2.css well removed', function(done) {
       fingerprint._clearOldFilesAsync(path.join(__dirname, 'public', 'css'), 'sample-2', '.css', (err) => {
         fingerprintFileExists('css/sample-2.css', (isExist) => {
           expect(isExist).to.be.false;
+          done();
         });
       });
     });
 
-    it('test wrong dir took to cleaner', function() {
+    it('test wrong dir took to cleaner', function(done) {
       fingerprint._clearOldFilesAsync(path.join(__dirname, 'this', 'dir', 'not', 'exist'), 'sample', '.css', (err) => {
         expect(err).to.be.instanceOf(Error)
         expect(err).to.not.equal(null);
+        done();
       });
     });
   });
@@ -227,31 +233,35 @@ describe('Fingerprint', () => {
   // Fingerprinting
   describe('Fingerprinting', function() {
 
-    it('sample.js with fingerprint', function() {
+    it('sample.js with fingerprint', function(done) {
       const fileName = path.join(__dirname, 'public', 'js', 'sample.js');
       fingerprint._fingerprintFileAsync(fileName, (err, fileNewName) => {
         expect(fileName).to.be.not.equal(fileNewName);
+        done();
       });
     });
 
-    it('sample.css with fingerprint', function() {
+    it('sample.css with fingerprint', function(done) {
       const fileName = path.join(__dirname, 'public', 'css', 'sample.css');
       fingerprint._fingerprintFileAsync(fileName, (err, fileNewName) => {
         expect(fileName).to.be.not.equal(fileNewName);
+        done();
       });
     });
 
-    it('sample-2.css with fingerprint', function() {
+    it('sample-2.css with fingerprint', function(done) {
       const fileName = path.join(__dirname, 'public', 'css', 'sample-2.css');
       fingerprint._fingerprintFileAsync(fileName, (err, fileNewName) => {
         expect(fileName).to.be.not.equal(fileNewName);
+        done();
       });
     });
 
-    it('with wrong filePath', function() {
+    it('with wrong filePath', function(done) {
       fingerprint._fingerprintFileAsync(path.join(__dirname, 'this', 'file', 'dont', 'exist.css'), (err, fileNewName) => {
         expect(err).to.be.instanceOf(Error)
         expect(err).to.not.equal(null);
+        done();
       });
     });
   });
@@ -281,7 +291,6 @@ describe('Fingerprint', () => {
   // Manifest
   describe('Manifest', function() {
     describe('The mapping', function() {
-
       it('add pair to map', function() {
         const sourcePath = path.join(fingerprint.options.publicRootPath, 'test/test.js');
         const destPath = path.join(fingerprint.options.publicRootPath, 'test/test-123456.js');
@@ -291,7 +300,6 @@ describe('Fingerprint', () => {
     });
 
     describe('_createAsync', function() {
-
       it('create with param (MAP)', function(done) {
         fingerprint._createManifestAsync(MAP, (err) => {
           fs.access(fingerprint.options.manifest, fs.constants.R_OK, (err) => {
