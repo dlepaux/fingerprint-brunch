@@ -86,7 +86,9 @@ describe('Fingerprint', () => {
       plugins: {
         fingerprint: {
           publicRootPath: './test/public',
-          manifest: './test/public/assets.json'
+          manifest: './test/public/assets.json',
+          // srcBasePath: './test/public',
+          // destBasePath: './test/public'
         }
       }
     });
@@ -265,28 +267,6 @@ describe('Fingerprint', () => {
       });
     });
   });
-
-  // Renaming
-  /*
-  describe('onCompile Renaming', function() {
-
-    it('renames sample.css with fingerprint', function() {
-      fingerprint.onCompile(GENERATED_FILES, () => {        
-        fingerprintFileExists('css/sample.css', (isExist) => {
-          expect(isExist).to.be.true;
-        });
-      });
-    });
-
-    it('renames sample.js with fingerprint', function() {
-      fingerprint.onCompile(GENERATED_FILES, () => {        
-        fingerprintFileExists('js/sample.js', (isExist) => {
-          expect(isExist).to.be.true;
-        });
-      });
-    });
-  });
-  */
 
   // Manifest
   describe('Manifest', function() {
@@ -511,6 +491,7 @@ describe('Fingerprint', () => {
     it('autoReplace in css sample (with doublon in map)', function(done) {
       fingerprint.options.alwaysRun = true;
       fingerprint.options.autoReplaceAndHash = true;
+      fingerprint.map = {};
       fingerprint._findAndReplaceSubAssetsAsync(path.join(__dirname, 'public', 'css', 'sample-2.css'), (err, filePath) => {
         // Expect parent file well fingerprinted
         expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal('undefined');
@@ -529,7 +510,12 @@ describe('Fingerprint', () => {
           expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal('undefined');
           expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal(undefined);
           expect(fingerprint.map[fingerprint.unixify(filePath)]).to.be.not.equal(fingerprint.unixify(filePath));
-          done();
+
+          // Test if troll.png has been fingerprinted
+          filePath = path.join('test', 'public', 'img', 'troll.png');
+          fs.access(fingerprint.map[fingerprint.unixify(filePath)], fs.constants.R_OK, (err) => {
+            done();
+          });
         });
       });
     });

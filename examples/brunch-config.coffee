@@ -27,9 +27,8 @@ exports.config =
       targets: '*'
       environments: ['production']
       alwaysRun: true
-      manifestGenerationForce: true
       autoReplaceAndHash: true
       manifest: './assets.json'
-      srcBasePath: 'public'
-      destBasePath: 'public'
-      autoClearOldFiles: true
+      publicRootPath: './public'
+      srcBasePath: './public'
+      destBasePath: './public'

@@ -55,7 +55,7 @@ class Fingerprint {
     const onCompileEnded = (err, filePath) => {
       // Make array for manifest
       return this._writeManifestAsync(() => {
-        callback && callback(filePath);
+        typeof(callback) == 'function' && callback(filePath);
       });
     }
 
@@ -110,7 +110,6 @@ class Fingerprint {
   _addToMap(fileInput, fileOutput) {
     fileInput = this._removePathBeforePublic(fileInput);
     fileOutput = this._removePathBeforePublic(fileOutput);
-
     // Remove srcBasePath/destBasePath
     fileInput = fileInput.replace(this.options.srcBasePath, "");
     fileOutput = fileOutput.replace(this.options.destBasePath, "");
@@ -122,20 +121,16 @@ class Fingerprint {
   _removePathBeforePublic(pathFile) {
     pathFile = this.unixify(pathFile);
     const pathPublicIndex = pathFile.indexOf(this.unixify(this.options.publicRootPath));
-    if (pathPublicIndex !== 0) {
-      pathFile = pathFile.substring(pathPublicIndex);
-    }
+    if (pathPublicIndex !== 0) pathFile = pathFile.substring(pathPublicIndex);
     return pathFile;
   }
 
   // Find dependencied like image, fonts.. Hash them and rewrite files (CSS only for now)
   _findAndReplaceSubAssetsAsync(filePath, done) {
     const that = this;
-
     // Return content of filePath and match pattern
     this._matchAssetsPattern(filePath, (data) => {
       if (data.filePaths !== null) {
-
         // Store promise in an array
         const promiseArray = [];
         Object.keys(data.filePaths).forEach( function(key) {
@@ -153,50 +148,44 @@ class Fingerprint {
               if (data.filePaths[key].indexOf('../') === 0) {
                 data.filePaths[key] = data.filePaths[key].substring(2);
               }
-
               const targetPath = that.unixify(path.join(that.options.publicRootPath, data.filePaths[key]));
-
-
 
               // Adding to map
               if (typeof(that.map[targetPath]) == 'undefined') {
                 that._fingerprintFileAsync(targetPath, (err, targetNewName) => {
-                  if (err) resolve(err);
-                  that._addToMap(targetPath, path.join(that.config.paths.public, targetNewName.substring(that.config.paths.public.length)));
-                  // Rename unhashed filePath by the hashed new name
-                  data.fileContent = data.fileContent.replace(match, `url('${that.unixify(targetNewName.substring(that.options.publicRootPath.length))}${finalHash}')`);
-                  resolve();
+                  if (err) return resolve(err);
+                  fs.access(targetNewName, fs.constants.R_OK, (err) => {
+                    that._addToMap(targetPath, path.join(that.config.paths.public, targetNewName.substring(that.config.paths.public.length)));
+                    // Rename unhashed filePath by the hashed new name
+                    data.fileContent = data.fileContent.replace(match, `url('${that.unixify(targetNewName.substring(that.options.publicRootPath.length - 2))}${finalHash}')`);
+                    resolve();
+                  });
                 });
+              // Resource is already in the map (maybe linked from an other file..) so we try to replace path with hashed one.
               } else {
                 let targetNewName = that.map[targetPath];
                 // Rename unhashed filePath by the hashed new name
-                data.fileContent = data.fileContent.replace(match, `url('${that.unixify(targetNewName.substring(that.options.publicRootPath.length))}${finalHash}')`);
+                data.fileContent = data.fileContent.replace(match, `url('${that.unixify(targetNewName.substring(that.options.publicRootPath.length - 2))}${finalHash}')`);
                 resolve();
               }
             });
           });
         });
-
         // Resolve promises
         promiseArray.reduce((previousPromise, promise, index) => {
           return previousPromise.then(() => {
             return promise();
           })
-          .catch(console.error);
         }, Promise.resolve())
         // Final treatment
-        .then(() => {
-
-          let modifiedFilePath = filePath;
-          if (this._isFingerprintable()) {
-            modifiedFilePath = this._fingerprintCompose(filePath, data.fileContent);
-          }
-
+        .then(() => { 
+          let fileNewName = filePath;
+          if (this._isFingerprintable()) fileNewName = this._fingerprintCompose(filePath, data.fileContent);
           // Write file to generate and rename it
           fs.writeFile(filePath, data.fileContent, (err) => {
             if (err) return done(err);
-            fs.rename(filePath, modifiedFilePath, () => {
-              this._addToMap(filePath, modifiedFilePath);
+            fs.rename(filePath, fileNewName, () => {
+              this._addToMap(filePath, fileNewName);
               done && done(null, filePath);
             });
           });
