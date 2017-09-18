@@ -1,7 +1,8 @@
 node_modules
-bower_components
-
 npm-debug.log
-
-
 *.tmp
+.nyc_output
+coverage
+test/public
+assets.json
+example/public
