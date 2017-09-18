@@ -9,12 +9,12 @@ class Fingerprint {
     this.prototype.brunchPlugin = true;
     // Defaults options
     this.prototype.options = {
-      // Mapping file so your server can serve the right files
+      // Mapping file so your server can serve the right files !!! put a './' before your path
       manifest: './assets.json',
-      // The base Path you want to remove from the `key` string in the mapping file
-      srcBasePath: 'exemple/',
-      // The base Path you want to remove from the `value` string in the mapping file
-      destBasePath: 'out/',
+      // The base Path you want to remove from the `key` string in the mapping file !!! put a './' before your path
+      srcBasePath: './exemple/',
+      // The base Path you want to remove from the `value` string in the mapping file !!! put a './' before your path
+      destBasePath: './out/',
       // How many digits of the SHA1.
       hashLength: 8,
       // Remove old fingerprinted files
@@ -27,8 +27,8 @@ class Fingerprint {
       alwaysRun: false,
       // autoReplaceAndHash assets in css/js, like a font linked in an url() in your css
       autoReplaceAndHash: false,
-      // public root path ( for multi theme support)
-      publicRootPath: '/public',
+      // public root path ( for multi theme support) !!! put a './' before your path
+      publicRootPath: './public',
       // Force the generation of the manifest, event if there are no fingerprinted files
       manifestGenerationForce: false,
 
@@ -154,12 +154,10 @@ class Fingerprint {
               if (typeof(that.map[targetPath]) == 'undefined') {
                 that._fingerprintFileAsync(targetPath, (err, targetNewName) => {
                   if (err) return resolve(err);
-                  fs.access(targetNewName, fs.constants.R_OK, (err) => {
-                    that._addToMap(targetPath, path.join(that.config.paths.public, targetNewName.substring(that.config.paths.public.length)));
-                    // Rename unhashed filePath by the hashed new name
-                    data.fileContent = data.fileContent.replace(match, `url('${that.unixify(targetNewName.substring(that.options.publicRootPath.length - 2))}${finalHash}')`);
-                    resolve();
-                  });
+                  that._addToMap(targetPath, path.join(that.config.paths.public, targetNewName.substring(that.config.paths.public.length)));
+                  // Rename unhashed filePath by the hashed new name
+                  data.fileContent = data.fileContent.replace(match, `url('${that.unixify(targetNewName.substring(that.options.publicRootPath.length - 2))}${finalHash}')`);
+                  resolve();
                 });
               // Resource is already in the map (maybe linked from an other file..) so we try to replace path with hashed one.
               } else {
