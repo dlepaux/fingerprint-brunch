@@ -55,7 +55,7 @@ class Fingerprint {
   // Main method
   onCompile(generatedFiles, callback) {
     // onCompile is ended
-    const onCompileEnded = (filePath) => {
+    const onCompileEnded = (err, filePath) => {
       // Make array for manifest
       return this._writeManifestAsync(() => {
         callback && callback(filePath);
@@ -99,12 +99,13 @@ class Fingerprint {
     if (this._isFingerprintable()) {
       // Just fingerprint targets
       this._fingerprintFileAsync(filePath, (err, fileNewName) => {
+        if (err) return done(err);
         this._addToMap(filePath, fileNewName);
-        done && done(filePath);
+        done && done(null, filePath);
       });
     } else {
       this._addToMap(filePath, fileNewName);
-      done && done(filePath);
+      done && done(null, filePath);
     }
   }
 
@@ -137,59 +138,82 @@ class Fingerprint {
     // Return content of filePath and match pattern
     this._matchAssetsPattern(filePath, (data) => {
       if (data.filePaths !== null) {
+
+        // Store promise in an array
+        const promiseArray = [];
         Object.keys(data.filePaths).forEach( function(key) {
+          promiseArray.push(() => {
+            return new Promise((resolve) => {
+              // Save matched string and extract filePath
+              const match = new RegExp(that._escapeStringToRegex(data.filePaths[key]), 'g');
+              data.filePaths[key] = that._extractURL(data.filePaths[key]);
 
-          // Save matched string and extract filePath
-          const match = new RegExp(that._escapeStringToRegex(data.filePaths[key]), 'g');
-          data.filePaths[key] = that._extractURL(data.filePaths[key]);
+              // Save Hash from filePath and remove it from filePath
+              const finalHash = that._extractHashFromURL(data.filePaths[key]);
+              data.filePaths[key] = data.filePaths[key].replace(that.options.paramettersPattern, '');
 
-          // Save Hash from filePath and remove it from filePath
-          const finalHash = that._extractHashFromURL(data.filePaths[key]);
-          data.filePaths[key] = data.filePaths[key].replace(that.options.paramettersPattern, '');
+              // Relative path with '../' at FIRST position is replaced with '/' for bootstrap font link
+              if (data.filePaths[key].indexOf('../') === 0) {
+                data.filePaths[key] = data.filePaths[key].substring(2);
+              }
 
-          // Relative path with '../' at FIRST position is replaced with '/' for bootstrap font link
-          if (data.filePaths[key].indexOf('../') === 0) {
-            data.filePaths[key] = data.filePaths[key].substring(2);
-          }
+              const targetPath = that.unixify(path.join(that.options.publicRootPath, data.filePaths[key]));
 
-          const targetPath = that.unixify(path.join(that.options.publicRootPath, data.filePaths[key]));
 
-          // Target is local and exist?
-          if (that.map[targetPath] || targetPath) {
-            // Adding to map
-            let targetNewName;
-            if (typeof(that.map[targetPath]) === 'undefined') {
-              that._fingerprintFileAsync(targetPath, (err, targetNewName) => {
-                that._addToMap(targetPath, path.join(that.config.paths.public, targetNewName.substring(that.config.paths.public.length)));
+
+              // Adding to map
+              if (typeof(that.map[targetPath]) == 'undefined') {
+                that._fingerprintFileAsync(targetPath, (err, targetNewName) => {
+                  if (err) {
+                    return fs.readdir(path.join(__dirname, 'public'), function (err, files) {
+                      resolve(err);
+                    });
+                  } else {
+                    that._addToMap(targetPath, path.join(that.config.paths.public, targetNewName.substring(that.config.paths.public.length)));
+                    // Rename unhashed filePath by the hashed new name
+                    data.fileContent = data.fileContent.replace(match, `url('${that.unixify(targetNewName.substring(that.options.publicRootPath.length))}${finalHash}')`);
+                    resolve();
+                  }
+                });
+              } else {
+                let targetNewName = that.map[targetPath];
                 // Rename unhashed filePath by the hashed new name
                 data.fileContent = data.fileContent.replace(match, `url('${that.unixify(targetNewName.substring(that.options.publicRootPath.length))}${finalHash}')`);
-              });
-            } else {
-              targetNewName = that.map[targetPath];
-              // Rename unhashed filePath by the hashed new name
-              data.fileContent = data.fileContent.replace(match, `url('${that.unixify(targetNewName.substring(that.options.publicRootPath.length))}${finalHash}')`);
-            }
-          }
+                resolve();
+              }
+            });
+          });
         });
-        // END forEach
 
-        let modifiedFilePath = filePath;
-        if (this._isFingerprintable()) {
-          modifiedFilePath = this._fingerprintCompose(filePath, data.fileContent);
-        }
+        // Resolve promises
+        promiseArray.reduce((previousPromise, promise, index) => {
+          return previousPromise.then(() => {
+            if (promise) {
+              return promise();
+            } else {
+              return new Promise((resolve) => resolve());
+            }
+          })
+          .catch(console.error);
+        }, Promise.resolve())
+        // Final treatment
+        .then(() => {
 
-        // Write file to generate and rename it
-        fs.writeFile(filePath, data.fileContent, 'utf8', (err) => {
-          if (err) throw new Error(err);
-          //console.log('filePath : ', filePath);
-          //console.log('modifiedFilePath : ', modifiedFilePath);
-          fs.rename(filePath, modifiedFilePath, () => {
-            this._addToMap(filePath, modifiedFilePath);
-            done && done(filePath);
+          let modifiedFilePath = filePath;
+          if (this._isFingerprintable()) {
+            modifiedFilePath = this._fingerprintCompose(filePath, data.fileContent);
+          }
+
+          // Write file to generate and rename it
+          fs.writeFile(filePath, data.fileContent, (err) => {
+            if (err) return done(err);
+            fs.rename(filePath, modifiedFilePath, () => {
+              this._addToMap(filePath, modifiedFilePath);
+              done && done(null, filePath);
+            });
           });
         });
       } else {
-        console.log('no sub assets detected');
         return this._makeCoffee(filePath, done);
       }
     });
@@ -260,7 +284,7 @@ class Fingerprint {
   // Rename file with his new fingerprint
   _fingerprintFileAsync(filePath, done) {
     const that = this;
-    fs.readFile(filePath, (err, data) => {
+    fs.readFile(filePath, 'utf-8', (err, data) => {
       if (err) return done(err); // filePath + " does not exist !"
       const fileNewName = that._fingerprintCompose(filePath, data);
       // Rename file, with hash
@@ -295,7 +319,6 @@ class Fingerprint {
     if (this._isFingerprintable() || this.options.manifestGenerationForce) {
       const output = JSON.stringify(map, null, "  ");
       fs.writeFile(this.options.manifest, output, (err) => {
-        //console.log(err);
         if (err) return done && done(err);
         done && done();
       });
@@ -308,7 +331,7 @@ class Fingerprint {
   _mergeManifestAsync(done) {
     const that = this;
     if (this._isFingerprintable() || this.options.manifestGenerationForce) {
-      fs.readFile(this.options.manifest, (err, data) => {
+      fs.readFile(this.options.manifest, 'utf-8', (err, data) => {
         if (err) return that._createManifestAsync(done);
         let manifest = JSON.parse(data);
         // Merge previous manifest with map

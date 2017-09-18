@@ -52,7 +52,6 @@ const GENERATED_FILES = [
 
 const fingerprintFileExists = (filename, done) => {
   filename = path.join(__dirname, 'public', ASSETS[filename] || filename);
-  console.log(filename);
   fs.access(filename, fs.constants.R_OK, (err) => {
     done && done(err ? false : true);
   });
@@ -67,7 +66,7 @@ const fingerprintAutoReplaceFileExists = (filename) => {
 
 const setupFakeFileSystem = (done) => {
   fse.remove(path.join(__dirname, 'public'), () => {
-    fse.copy(path.join(__dirname, 'fixtures'), path.join(__dirname, 'public'), () => {
+    fse.copy(path.join(__dirname, 'fixtures'), path.join(__dirname, 'public'), (err) => {
       done && done();
     });
   });
@@ -78,7 +77,7 @@ describe('Fingerprint', () => {
   let fingerprint = null;
 
   // executed before each test
-  beforeEach(() =>
+  beforeEach((done) => {
     fingerprint = new Fingerprint({
       environments: ['production'],
       paths: {
@@ -90,8 +89,11 @@ describe('Fingerprint', () => {
           manifest: './test/public/assets.json'
         }
       }
-    })
-  );
+    });
+    setupFakeFileSystem(() => {
+      done()
+    });
+  });
 
   // executed after each test
   afterEach((done) => {
@@ -131,7 +133,6 @@ describe('Fingerprint', () => {
 
   // Testing pattern
   describe('Pattern testing', function() {
-    beforeEach((done) => setupFakeFileSystem(() => done()));
 
     it('assets inner finded', function() {
       const samplePath = path.join(__dirname, 'public', 'css', 'sample.css');
@@ -168,7 +169,6 @@ describe('Fingerprint', () => {
 
   // Cleaning in dev env
   describe('Cleanning old hashed files', function() {
-    beforeEach((done) => setupFakeFileSystem(() => done()));
 
     it('sample.js is exists', function() {
       const pathFile = path.join(__dirname, 'public', 'js/sample.js');
@@ -226,7 +226,6 @@ describe('Fingerprint', () => {
 
   // Fingerprinting
   describe('Fingerprinting', function() {
-    beforeEach((done) => setupFakeFileSystem(() => done()));
 
     it('sample.js with fingerprint', function() {
       const fileName = path.join(__dirname, 'public', 'js', 'sample.js');
@@ -260,7 +259,6 @@ describe('Fingerprint', () => {
   // Renaming
   /*
   describe('onCompile Renaming', function() {
-    beforeEach((done) => setupFakeFileSystem(() => done()));
 
     it('renames sample.css with fingerprint', function() {
       fingerprint.onCompile(GENERATED_FILES, () => {        
@@ -283,7 +281,6 @@ describe('Fingerprint', () => {
   // Manifest
   describe('Manifest', function() {
     describe('The mapping', function() {
-      beforeEach((done) => setupFakeFileSystem(() => done()));
 
       it('add pair to map', function() {
         const sourcePath = path.join(fingerprint.options.publicRootPath, 'test/test.js');
@@ -294,74 +291,79 @@ describe('Fingerprint', () => {
     });
 
     describe('_createAsync', function() {
-      beforeEach((done) => setupFakeFileSystem(() => done()));
 
-      it('create with param (MAP)', function() {
+      it('create with param (MAP)', function(done) {
         fingerprint._createManifestAsync(MAP, (err) => {
           fs.access(fingerprint.options.manifest, fs.constants.R_OK, (err) => {
             expect(!err?true:false).to.be.true;
+            done();
           });
         });
       });
 
-      it('create with this.map setted', function() {
+      it('create with this.map setted', function(done) {
         fingerprint.map = MAP;
         fingerprint._createManifestAsync((err) => {
           fs.access(fingerprint.options.manifest, fs.constants.R_OK, (err) => {
             expect(!err?true:false).to.be.true;
+            done();
           });
         });
       });
 
-      it('create (forced)', function() {
+      it('create (forced)', function(done) {
         fingerprint.options.manifestGenerationForce = true;
         fingerprint.options.environments = [];
         fingerprint.options.alwaysRun = false;
         fingerprint._createManifestAsync(MAP, (err) => {
           fs.access(fingerprint.options.manifest, fs.constants.R_OK, (err) => {
             expect(!err?true:false).to.be.true;
+            done();
           });
         });
       });
 
-      it('create with a unvalid name (?)', function() {
+      it('create with a unvalid name (?)', function(done) {
         fingerprint.options.manifest = './test/public/ass\0ets.json';
         fingerprint._createManifestAsync(MAP, (err) => {
           expect(err).to.be.instanceOf(Error)
           expect(err).to.not.equal(null);
+          done();
         });
       });
 
-      it('create MAP passed, but not written', function() {
+      it('create MAP passed, but not written', function(done) {
         fingerprint.options.manifestGenerationForce = false;
         fingerprint.options.environments = [];
         fingerprint.options.alwaysRun = false;
         fingerprint._createManifestAsync(MAP, (err) => {
           fs.access(fingerprint.options.manifest, fs.constants.R_OK, (err) => {
             expect(!err?true:false).to.be.false;
+            done();
           });
         });
       });
     });
 
     describe('_mergeAsync', function() {
-      beforeEach((done) => setupFakeFileSystem(() => done()));
 
-      it('check manifest is not exist on init (access should be false)', () => {
+      it('check manifest is not exist on init (access should be false)', (done) => {
         fs.access(fingerprint.options.manifest, fs.constants.R_OK, (err) => {
           expect(!err?true:false).to.be.false;
+          done();
         });
       });
 
-      it('merging an non existing one (access should be false)', function() {
+      it('merging an non existing one (access should be false)', function(done) {
         fingerprint._mergeManifestAsync(() => {
           fs.access(fingerprint.options.manifest, fs.constants.R_OK, (err) => {
             expect(!err?true:false).to.be.false;
+            done();
           });
         });
       });
 
-      it('merging an non existing one with forcing (should create it)', function() {
+      it('merging an non existing one with forcing (should create it)', function(done) {
         fingerprint.options.manifestGenerationForce = true;
         // Add key/value to map
         Object.keys(MAP).forEach( function(key) {
@@ -370,11 +372,12 @@ describe('Fingerprint', () => {
         fingerprint._mergeManifestAsync((err) => {
           fs.access(fingerprint.options.manifest, fs.constants.R_OK, (err) => {
             expect(!err?true:false).to.be.true;
+            done();
           });
         });
       });
 
-      it('merging an existing manifest', function() {
+      it('merging an existing manifest', function(done) {
         fingerprint.options.manifestGenerationForce = true;
         // Add key/value to map
         Object.keys(MAP).forEach( function(key) {
@@ -386,6 +389,7 @@ describe('Fingerprint', () => {
               expect(!err?true:false).to.be.true;
               data = JSON.parse(data.toString());
               expect(data['hello/world']).to.be.equal('hello/world');
+              done();
             });
           });
         });
@@ -393,9 +397,8 @@ describe('Fingerprint', () => {
     });
 
     describe('_writeAsync', function() {
-      beforeEach((done) => setupFakeFileSystem(() => done()));
 
-      it('write manifest with createManifest', function() {
+      it('write manifest with createManifest', function(done) {
         Object.keys(MAP).forEach( function(key) {
           fingerprint._addToMap(key, MAP[key]);
         });
@@ -403,11 +406,12 @@ describe('Fingerprint', () => {
         fingerprint._writeManifestAsync(() => {
           fs.access(fingerprint.options.manifest, fs.constants.R_OK, (err) => {
             expect(!err?true:false).to.be.true;
+            done();
           });
         });
       });
 
-      it('write manifest with mergeManifest', function() {
+      it('write manifest with mergeManifest', function(done) {
         Object.keys(MAP).forEach( function(key) {
           fingerprint._addToMap(key, MAP[key]);
         });
@@ -416,6 +420,7 @@ describe('Fingerprint', () => {
           fingerprint._writeManifestAsync(() => {
             fs.access(fingerprint.options.manifest, fs.constants.R_OK, (err) => {
               expect(!err?true:false).to.be.true;
+              done();
             });
           });
         });
@@ -425,24 +430,25 @@ describe('Fingerprint', () => {
 
   // Making coffee
   describe('Fingerprinting (non sub assets)', function() {
-    beforeEach((done) => setupFakeFileSystem(() => done()));
 
-    it('should fingerprint file', function() {
+    it('should fingerprint file', function(done) {
       fingerprint.options.alwaysRun = true;
       const sourceFullPath = path.join(__dirname, 'public', 'css', 'sample.css');
-      fingerprint._makeCoffee(sourceFullPath, (filePath) => {
+      fingerprint._makeCoffee(sourceFullPath, (err, filePath) => {
         expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal('undefined');
         expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal(undefined);
         expect(fingerprint.map[fingerprint.unixify(filePath)]).to.be.not.equal(fingerprint.unixify(filePath));
+        done();
       });
     });
 
-    it('should not fingerprint file', function() {
+    it('should not fingerprint file', function(done) {
       fingerprint.options.alwaysRun = false;
-      fingerprint._makeCoffee(path.join(__dirname, 'public', 'css', 'sample.css'), (filePath) => {
+      fingerprint._makeCoffee(path.join(__dirname, 'public', 'css', 'sample.css'), (err, filePath) => {
         expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal('undefined');
         expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal(undefined);
-        expect(fingerprint.map[fingerprint.unixify(filePath)]).to.be.equal(fingerprint.unixify(filePath));  
+        expect(fingerprint.map[fingerprint.unixify(filePath)]).to.be.equal(fingerprint.unixify(filePath));
+        done();
       });
     });
   });
@@ -451,7 +457,6 @@ describe('Fingerprint', () => {
 
   // Environment detection
   describe('Environment detection', function() {
-    beforeEach((done) => setupFakeFileSystem(() => done()));
 
     it('does not run in non-production environment', function() {
       fingerprint.options.environments = ['development'];
@@ -472,40 +477,38 @@ describe('Fingerprint', () => {
 
   // Matching assets to hash
   describe('AutoReplace sub assets', function() {
-    beforeEach((done) => setupFakeFileSystem(() => done()));
 
     it('extract url from css "url()" attribute', function() {
       expect(fingerprint._extractURL('url("test.png")')).to.be.equal('test.png');
     });
 
-    it('autoReplace in css sample', function() {
+    it('autoReplace in css sample', function(done) {
       fingerprint.options.alwaysRun = true;
       fingerprint.options.autoReplaceAndHash = true;
-      fingerprint._findAndReplaceSubAssetsAsync(path.join(__dirname, 'public', 'css', 'sample.css'), (filePath) => {
+      fingerprint._findAndReplaceSubAssetsAsync(path.join(__dirname, 'public', 'css', 'sample.css'), (err, filePath) => {
         // Expect parent file well fingerprinted
         expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal('undefined');
         expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal(undefined);
         expect(fingerprint.map[fingerprint.unixify(filePath)]).to.be.not.equal(fingerprint.unixify(filePath));  
         
-        console.log(fingerprint.map);
         // Expect children file well fingerprinted too
         filePath = path.join('test', 'public', 'img', 'troll.png');
         expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal('undefined');
         expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal(undefined);
-        expect(fingerprint.map[fingerprint.unixify(filePath)]).to.be.not.equal(fingerprint.unixify(filePath));  
+        expect(fingerprint.map[fingerprint.unixify(filePath)]).to.be.not.equal(fingerprint.unixify(filePath));
+        done() 
       });
     });
 
-    it('autoReplace in css sample (with doublon in map)', function() {
+    it('autoReplace in css sample (with doublon in map)', function(done) {
       fingerprint.options.alwaysRun = true;
       fingerprint.options.autoReplaceAndHash = true;
-      fingerprint._findAndReplaceSubAssetsAsync(path.join(__dirname, 'public', 'css', 'sample-2.css'), (filePath) => {
+      fingerprint._findAndReplaceSubAssetsAsync(path.join(__dirname, 'public', 'css', 'sample-2.css'), (err, filePath) => {
         // Expect parent file well fingerprinted
         expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal('undefined');
         expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal(undefined);
         expect(fingerprint.map[fingerprint.unixify(filePath)]).to.be.not.equal(fingerprint.unixify(filePath));  
         
-        console.log(fingerprint.map);
         // Expect children file well fingerprinted too
         filePath = path.join('test', 'public', 'img', 'troll.png');
         expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal('undefined');
@@ -513,48 +516,52 @@ describe('Fingerprint', () => {
         expect(fingerprint.map[fingerprint.unixify(filePath)]).to.be.not.equal(fingerprint.unixify(filePath));
 
         // troll.png is in doublon
-        fingerprint._findAndReplaceSubAssetsAsync(path.join(__dirname, 'public', 'css', 'sample.css'), (filePath) => {
+        fingerprint._findAndReplaceSubAssetsAsync(path.join(__dirname, 'public', 'css', 'sample.css'), (err, filePath) => {
           // Expect parent file well fingerprinted
           expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal('undefined');
           expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal(undefined);
           expect(fingerprint.map[fingerprint.unixify(filePath)]).to.be.not.equal(fingerprint.unixify(filePath));
+          done();
         });
       });
     });
 
-    it('autoReplace in css sample (without sub assets)', function() {
+    it('autoReplace in css sample (without sub assets)', function(done) {
       fingerprint.options.alwaysRun = true;
       fingerprint.options.autoReplaceAndHash = true;
-      fingerprint._findAndReplaceSubAssetsAsync(path.join(__dirname, 'public', 'css', 'sample-3.css'), (filePath) => {
+      fingerprint._findAndReplaceSubAssetsAsync(path.join(__dirname, 'public', 'css', 'sample-3.css'), (err, filePath) => {
         // Expect parent file well fingerprinted
         expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal('undefined');
         expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal(undefined);
         expect(fingerprint.map[fingerprint.unixify(filePath)]).to.be.not.equal(fingerprint.unixify(filePath));  
+        done();
       });
     });
   });
 
   // Matching assets to hash
   describe('Full Test with onCompile', function() {
-    beforeEach((done) => setupFakeFileSystem(() => done()));
 
-    it('test with one file (with autoReplace)', function() {
+    it('test with one file (with autoReplace)', function(done) {
       fingerprint.onCompile([{path: path.join(__dirname, 'public', 'js', 'sample.js')}], (filePath) => {
         expect(filePath).to.be.not.null();
+        done();
       });
     });
 
-    it('test with one file (without autoReplace)', function() {
+    it('test with one file (without autoReplace)', function(done) {
       fingerprint.options.autoReplaceAndHash = false;
       fingerprint.onCompile([{path: path.join(__dirname, 'public', 'js', 'sample.js')}], (filePath) => {
         expect(filePath).to.be.not.null();
+        done();
       });
     });
 
-    it('test with one file (without autoClear)', function() {
+    it('test with one file (without autoClear)', function(done) {
       fingerprint.options.autoClearOldFiles = true;
       fingerprint.onCompile([{path: path.join(__dirname, 'public', 'js', 'sample.js')}], (filePath) => {
         expect(filePath).to.be.not.null();
+        done();
       });
     });
   });
