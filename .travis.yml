@@ -2,3 +2,4 @@ language: node_js
 node_js:
   - 'stable'
   - '6.11.2'
+after_success: 'npm run coveralls'

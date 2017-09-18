@@ -11,7 +11,8 @@
   ],
   "main": "./src/index.js",
   "scripts": {
-    "test": "nyc --reporter=html node_modules/.bin/mocha --compilers js:babel-core/register"
+    "test": "node_modules/.bin/mocha --compilers js:babel-core/register",
+    "coveralls": "nyc --reporter=text"
   },
   "repository": {
     "type": "git",
