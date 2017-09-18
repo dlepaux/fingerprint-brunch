@@ -159,8 +159,6 @@ Return more info on compile
 
 Run `npm i && npm test`
 
-Know Issue on Windows : the fingerprint (hash) of `sample.css`is differents cause the sha1 lib isn't same.
-
 
 ## <a name="contributing"></a> Contributing
 
@@ -169,7 +167,7 @@ Pull requests are welcome. If you add functionality, then please add unit tests 
 
 ## <a name="license"></a> License
 
-« Copyright ©
+« Copyright © David Lepaux
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the “Software”), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
@@ -180,28 +178,3 @@ The Software is provided “as is”, without warranty of any kind, express or i
 [Brunch]: http://brunch.io
 [travis]: https://travis-ci.org/dlepaux/fingerprint-brunch
 [travis-badge]: https://img.shields.io/travis/dlepaux/fingerprint-brunch.svg?style=flat
-
-
-# Rewrite (Async)
-
-- onCompile
-  - fs.exists l.75
-  - fs.exists l.85
-- _findAndReplaceSubAssets
-  - fs.exists l.155
-  - fs.writeFile l.178
-  - fs.rename l.180
-- _getAssetsInner
-  - fs.readFile l.188
-- _clearOldFiles
-  - fs.readdir l.221
-  - fs.unlink l.226
-- _fingerprintCompose
-  - fs.readFile l.248
-- _fingerprintFile
-  - fs.rename l.264
-- _removeManifest
-  - fs.exists l.270
-  - fs.unlink l.270
-- _writeManifest
-  - fs.readFile l.284

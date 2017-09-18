@@ -1,0 +1,31 @@
+/* Absolute path (from root) */
+body {
+    background-color: royalblue;
+    background-image: url(/img/troll.png) center center;
+}
+
+@font-face {
+  font-family: "font";
+  src:url("/fonts/font.eot");
+  src:url("/fonts/font.eot?#iefix") format("embedded-opentype"),
+    url("/fonts/font.woff") format("woff"),
+    url("/fonts/font.ttf") format("truetype"),
+    url("/fonts/font.svg#font") format("svg");
+  font-weight: normal;
+  font-style: normal;
+
+}
+
+
+/* Relative path (if only one occurence of '..', we back path to absolute from root.. */
+@font-face {
+  font-family: "font-relative";
+  src:url('../fonts/font-relative.eot');
+  src:url('../fonts/font-relative.eot?#iefix') format("embedded-opentype"),
+    url('../fonts/font-relative.woff') format("woff"),
+    url('../fonts/font-relative.ttf') format("truetype"),
+    url('../fonts/font-relative.svg#font') format("svg");
+  font-weight: normal;
+  font-style: normal;
+
+}

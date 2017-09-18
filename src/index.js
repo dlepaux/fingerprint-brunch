@@ -164,16 +164,11 @@ class Fingerprint {
               // Adding to map
               if (typeof(that.map[targetPath]) == 'undefined') {
                 that._fingerprintFileAsync(targetPath, (err, targetNewName) => {
-                  if (err) {
-                    return fs.readdir(path.join(__dirname, 'public'), function (err, files) {
-                      resolve(err);
-                    });
-                  } else {
-                    that._addToMap(targetPath, path.join(that.config.paths.public, targetNewName.substring(that.config.paths.public.length)));
-                    // Rename unhashed filePath by the hashed new name
-                    data.fileContent = data.fileContent.replace(match, `url('${that.unixify(targetNewName.substring(that.options.publicRootPath.length))}${finalHash}')`);
-                    resolve();
-                  }
+                  if (err) resolve(err);
+                  that._addToMap(targetPath, path.join(that.config.paths.public, targetNewName.substring(that.config.paths.public.length)));
+                  // Rename unhashed filePath by the hashed new name
+                  data.fileContent = data.fileContent.replace(match, `url('${that.unixify(targetNewName.substring(that.options.publicRootPath.length))}${finalHash}')`);
+                  resolve();
                 });
               } else {
                 let targetNewName = that.map[targetPath];
@@ -188,11 +183,7 @@ class Fingerprint {
         // Resolve promises
         promiseArray.reduce((previousPromise, promise, index) => {
           return previousPromise.then(() => {
-            if (promise) {
-              return promise();
-            } else {
-              return new Promise((resolve) => resolve());
-            }
+            return promise();
           })
           .catch(console.error);
         }, Promise.resolve())
