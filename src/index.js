@@ -35,9 +35,9 @@ class Fingerprint {
       // Force the generation of the manifest, event if there are no fingerprinted files
       manifestGenerationForce: false,
       // Asset to fingerprint (in public), files will be fingerprinted and added to the manifest
-      foldersToFingerprint: false // or '/img' or ['/img', '/svg']
+      foldersToFingerprint: false, // or ['/img'] or ['/img', '/svg']
       // Specific asset to fingerprint (in public)
-      assetsToFingerprint: false // or '/img/troll.png' or ['/img/troll.png', '/svg/logo.svg']
+      assetsToFingerprint: false, // or ['/img/troll.png'] or ['/img/troll.png', '/svg/logo.svg']
 
       // Assets pattern
       assetsPattern: new RegExp(/url\([\'\"]?[a-zA-Z0-9\-\/_.:]+\.(woff|woff2|eot|ttf|otf|jpg|jpeg|png|bmp|gif|svg)\??\#?[a-zA-Z0-9\-\/_]*[\'\"]?\)/g),
@@ -66,12 +66,30 @@ class Fingerprint {
    * @param  {Function} callback       Use for tests, in regular mode it's generaly map files
    */
   onCompile(generatedFiles, callback) {
+    const that = this;
+
     // onCompile is ended
     const onCompileEnded = (err, filePath) => {
-      // Make array for manifest
-      return this._writeManifestAsync(() => {
-        typeof(callback) == 'function' && callback(filePath);
-      });
+      if (that.options.foldersToFingerprint) {
+        let callee = '_fingerprintDirs';
+        if (typeof(that.options.foldersToFingerprint) == 'string') callee = '_fingerprintDir';
+        return that[callee](that.options.foldersToFingerprint, () => {
+          that._writeManifestAsync(() => {
+            typeof(callback) == 'function' && callback(filePath);
+          });
+        })
+      } else if (that.options.assetsToFingerprint) {
+        return that._fingerprintAllResolver(that.options.assetsToFingerprint, (resolve) => resolve(), () => {
+          that._writeManifestAsync(() => {
+            typeof(callback) == 'function' && callback(filePath);
+          });
+        });
+      } else {
+        // Make array for manifest
+        return that._writeManifestAsync(() => {
+          typeof(callback) == 'function' && callback(filePath);
+        });
+      }
     }
 
     // Inspect files
@@ -153,6 +171,95 @@ class Fingerprint {
   }
 
   /**
+   * [_fingerprintDirs description]
+   * @param  {[type]}   dirs [description]
+   * @param  {Function} done [description]
+   * @return {[type]}        [description]
+   */
+  _fingerprintDirs(dirs, done) {
+    const that = this;
+    let dirDoneCounter = 0;
+    dirs.forEach((dir) => {
+      that._fingerprintDir(dir, (err) => {
+        if (err) return done && done(err);
+        dirDoneCounter++;
+        if (dirs.length == dirDoneCounter) return done && done();
+      });
+    })
+  }
+
+
+  /**
+   * [_fingerprintDir description]
+   * @param  {[type]}   dir  [description]
+   * @param  {Function} done [description]
+   * @return {[type]}        [description]
+   */
+  _fingerprintDir(dir, done) {
+    const that = this;
+    fs.readdir(path.join(that.config.paths.public, dir), function (err, files) {
+      if (err) return done && done(err);
+      files.forEach((part, index, theArray) => {
+        theArray[index] = path.join(dir, part);
+      });
+      that._fingerprintAllResolver(files, (resolve) => resolve(), () => done && done());
+    });
+  }
+
+
+  /**
+   * [_fingerprintAllResolver description]
+   * @param  {[type]} filePaths [description]
+   * @param  {[type]} promise   [description]
+   * @param  {[type]} resolver  [description]
+   * @return {[type]}           [description]
+   */
+  _fingerprintAllResolver(filePaths, promise, resolver) {
+    const that = this;
+    const promiseArray = [];
+    Object.keys(filePaths).forEach( function(key) {
+      promiseArray.push(() => {
+        return new Promise((resolve, reject) => {
+          let match = null;
+          let finalHash = null;
+
+          if (filePaths[key].indexOf('url(') != -1) {
+            // Save matched string and extract filePath
+            match = new RegExp(that._parseStringToRegex(filePaths[key]), 'g');
+            filePaths[key] = that._getPathFromCSS(filePaths[key]);
+
+            // Save Hash from filePath and remove it from filePath
+            finalHash = that._getHashFromURL(filePaths[key]);
+            filePaths[key] = filePaths[key].replace(that.options.paramettersPattern, '');
+
+            // Relative path with '../' at FIRST position is replaced with '/' for bootstrap font link
+            if (filePaths[key].indexOf('../') === 0) filePaths[key] = filePaths[key].substring(2);
+          }
+
+          const targetPath = that.unixify(path.join(that.options.publicRootPath, filePaths[key]));
+
+          // Adding to map
+          if (typeof(that.map[targetPath]) == 'undefined') {
+            that._fingerprintFileAsync(targetPath, (err, targetNewName) => {
+              if (err) return resolve(err);
+              that._addPairToMap(targetPath, path.join(that.config.paths.public, targetNewName.substring(that.config.paths.public.length)));
+              // Rename unhashed filePath by the hashed new name
+              return promise(resolve, targetNewName, finalHash, match);
+            });
+          // Resource is already in the map (maybe linked from an other file..) so we try to replace path with hashed one.
+          } else {
+            let targetNewName = that.map[targetPath];
+            // Rename unhashed filePath by the hashed new name
+            return promise(resolve, targetNewName, finalHash, match);
+          }
+        });
+      });
+    });
+    // Resolve promises
+    promiseArray.reduce((previousPromise, promise, index) => previousPromise.then(() => promise()), Promise.resolve()).then(() => resolver());
+  }
+
+  /**
    * Fingerprint all assets in the filePath and itself
    * @param  {String}   filePath File to fingerprint
    * @param  {Function} done     Callback(err, filePath)
@@ -162,59 +269,18 @@ class Fingerprint {
     // Return content of filePath and match pattern
     this._getFingerprintAllData(filePath, (data) => {
       if (data.filePaths !== null) {
-        // Store promise in an array
-        const promiseArray = [];
-        Object.keys(data.filePaths).forEach( function(key) {
-          promiseArray.push(() => {
-            return new Promise((resolve) => {
-              // Save matched string and extract filePath
-              const match = new RegExp(that._parseStringToRegex(data.filePaths[key]), 'g');
-              data.filePaths[key] = that._getPathFromCSS(data.filePaths[key]);
-
-              // Save Hash from filePath and remove it from filePath
-              const finalHash = that._getHashFromURL(data.filePaths[key]);
-              data.filePaths[key] = data.filePaths[key].replace(that.options.paramettersPattern, '');
-
-              // Relative path with '../' at FIRST position is replaced with '/' for bootstrap font link
-              if (data.filePaths[key].indexOf('../') === 0) {
-                data.filePaths[key] = data.filePaths[key].substring(2);
-              }
-              const targetPath = that.unixify(path.join(that.options.publicRootPath, data.filePaths[key]));
-
-              // Adding to map
-              if (typeof(that.map[targetPath]) == 'undefined') {
-                that._fingerprintFileAsync(targetPath, (err, targetNewName) => {
-                  if (err) return resolve(err);
-                  that._addPairToMap(targetPath, path.join(that.config.paths.public, targetNewName.substring(that.config.paths.public.length)));
-                  // Rename unhashed filePath by the hashed new name
-                  data.fileContent = data.fileContent.replace(match, `url('${that.unixify(targetNewName.substring(that.options.publicRootPath.length - 2))}${finalHash}')`);
-                  resolve();
-                });
-              // Resource is already in the map (maybe linked from an other file..) so we try to replace path with hashed one.
-              } else {
-                let targetNewName = that.map[targetPath];
-                // Rename unhashed filePath by the hashed new name
-                data.fileContent = data.fileContent.replace(match, `url('${that.unixify(targetNewName.substring(that.options.publicRootPath.length - 2))}${finalHash}')`);
-                resolve();
-              }
-            });
-          });
-        });
-        // Resolve promises
-        promiseArray.reduce((previousPromise, promise, index) => {
-          return previousPromise.then(() => {
-            return promise();
-          })
-        }, Promise.resolve())
-        // Final treatment
-        .then(() => { 
+        that._fingerprintAllResolver(data.filePaths, (resolve, targetNewName, finalHash, match) => {
+          // Add real path into the css file
+          data.fileContent = data.fileContent.replace(match, `url('${that.unixify(targetNewName.substring(that.options.publicRootPath.length - 2))}${finalHash}')`);
+          resolve();
+        }, () => {
           let fileNewName = filePath;
-          if (this._isFingerprintable()) fileNewName = this._getFingerprintedPath(filePath, data.fileContent);
+          if (that._isFingerprintable()) fileNewName = that._getFingerprintedPath(filePath, data.fileContent);
           // Write file to generate and rename it
           fs.writeFile(filePath, data.fileContent, (err) => {
-            if (err) return done(err);
+            // if (err) return done(err); // how test this branch ?
             fs.rename(filePath, fileNewName, () => {
-              this._addPairToMap(filePath, fileNewName);
+              that._addPairToMap(filePath, fileNewName);
               done && done(null, filePath);
             });
           });
@@ -276,7 +342,7 @@ class Fingerprint {
    * @return {Boolean} Allow or not to fingerprint file
    */
   _isFingerprintable() {
-    return (Array.from(this.options.environments).includes(this.options.environments[0])) || this.options.alwaysRun;
+    return (Array.from(this.options.environments).includes(process.env.NODE_ENV || 'development')) || this.options.alwaysRun;
   }
 
   /**
