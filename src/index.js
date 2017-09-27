@@ -5,6 +5,9 @@ const CryptoJS = require('crypto-js');
 
 class Fingerprint {
   
+  /**
+   * Set initial state of plugin, options, map
+   */
   static initClass() {
     this.prototype.brunchPlugin = true;
     // Defaults options
@@ -35,6 +38,7 @@ class Fingerprint {
       foldersToFingerprint: false, // or ['/img'] or ['/img', '/svg']
       // Specific asset to fingerprint (in public)
       assetsToFingerprint: false, // or ['/img/troll.png'] or ['/img/troll.png', '/svg/logo.svg']
+
       // Assets pattern
       assetsPattern: new RegExp(/url\([\'\"]?[a-zA-Z0-9\-\/_.:]+\.(woff|woff2|eot|ttf|otf|jpg|jpeg|png|bmp|gif|svg)\??\#?[a-zA-Z0-9\-\/_]*[\'\"]?\)/g),
       // URL parameters pattern
@@ -45,6 +49,10 @@ class Fingerprint {
     this.prototype.map = {};
   }
 
+  /**
+   * Override plugin options with config.plugins.fingerprint
+   * @param  {Object} config This is the global config of the brunch-config file
+   */
   constructor(config) {
     // Get Brunch global config
     this.config = config;
@@ -52,7 +60,11 @@ class Fingerprint {
     this.options = Object.assign(this.options, config && config.plugins && config.plugins.fingerprint || {});
   }
 
-  // Main method
+  /**
+   * Brunch native method
+   * @param  {Array}    generatedFiles Contain an array of object (path: {filePath})
+   * @param  {Function} callback       Use for tests, in regular mode it's generaly map files
+   */
   onCompile(generatedFiles, callback) {
     const that = this;
 
@@ -81,7 +93,6 @@ class Fingerprint {
     }
 
     // Inspect files
-    let treatedFiles = 0;
     for (let file of Array.from(generatedFiles)) {
       // Set var with generatedFile
       const filePath = file.path;
@@ -93,53 +104,66 @@ class Fingerprint {
       if (this.options.autoClearOldFiles) this._clearOldFilesAsync(dir, base, ext);
       // Hash only file in targets option key
       if (this.options.targets === '*' || Array.from(this.options.targets).includes(base + ext)) {
-        treatedFiles++;
         if (this.options.autoReplaceAndHash) {
           // Fingerprint sub files
-          this._findAndReplaceSubAssetsAsync(filePath, onCompileEnded);
+          this._fingerprintAllAsync(filePath, onCompileEnded);
         } else {
-          this._makeCoffee(filePath, onCompileEnded);
+          this._fingerprintOneAsync(filePath, onCompileEnded);
         }
       }
     }
-
-    // Close onCompile if any files are treated
-    // if (treatedFiles > 0) onCompileEnded();
   }
 
+  /**
+   * Normalize path between Win/Linux
+   * @param  {String} pathFile Path to unixify
+   * @return {String}          Path unixifyed
+   */
   unixify(pathFile) {
     return pathFile.split('\\').join('/');
   }
 
-  // Wana coffee?
-  _makeCoffee(filePath, done) {
+  /**
+   * Fingerprint file if it is fingerprintable
+   * @param  {String}   filePath Path to file we want to fingerprint
+   * @param  {Function} done     Callback(err, filePath)
+   */
+  _fingerprintOneAsync(filePath, done) {
     let fileNewName = filePath;
     if (this._isFingerprintable()) {
       // Just fingerprint targets
       this._fingerprintFileAsync(filePath, (err, fileNewName) => {
         if (err) return done(err);
-        this._addToMap(filePath, fileNewName);
+        this._addPairToMap(filePath, fileNewName);
         done && done(null, filePath);
       });
     } else {
-      this._addToMap(filePath, fileNewName);
+      this._addPairToMap(filePath, fileNewName);
       done && done(null, filePath);
     }
   }
 
-  // Unixify & Remove part from original path
-  _addToMap(fileInput, fileOutput) {
-    fileInput = this._removePathBeforePublic(fileInput);
-    fileOutput = this._removePathBeforePublic(fileOutput);
+  /**
+   * Add pair; originalFileName => fingerprintedFileName
+   * @param {String} fileInput  filePath with original name
+   * @param {String} fileOutput filePath with fingerprinted name
+   */
+  _addPairToMap(input, output) {
+    input = this._relativizePublicPath(input);
+    output = this._relativizePublicPath(output);
     // Remove srcBasePath/destBasePath
-    fileInput = fileInput.replace(this.options.srcBasePath, "");
-    fileOutput = fileOutput.replace(this.options.destBasePath, "");
+    input = input.replace(this.options.srcBasePath, "");
+    output = output.replace(this.options.destBasePath, "");
     // Adding to @map var
-    this.map[fileInput] = fileOutput;
+    this.map[input] = output;
   }
 
-  // Remove path before the public
-  _removePathBeforePublic(pathFile) {
+  /**
+   * Relativize path; remove absolute begin path
+   * @param  {String} pathFile Path to relativize
+   * @return {String}          Relativized path
+   */
+  _relativizePublicPath(pathFile) {
     pathFile = this.unixify(pathFile);
     const pathPublicIndex = pathFile.indexOf(this.unixify(this.options.publicRootPath));
     if (pathPublicIndex !== 0) pathFile = pathFile.substring(pathPublicIndex);
@@ -243,7 +267,7 @@ class Fingerprint {
   _fingerprintAllAsync(filePath, done) {
     const that = this;
     // Return content of filePath and match pattern
-    this._matchAssetsPattern(filePath, (data) => {
+    this._getFingerprintAllData(filePath, (data) => {
       if (data.filePaths !== null) {
         that._fingerprintAllResolver(data.filePaths, (resolve, targetNewName, finalHash, match) => {
           // Add real path into the css file
@@ -262,12 +286,17 @@ class Fingerprint {
           });
         });
       } else {
-        return this._makeCoffee(filePath, done);
+        return this._fingerprintOneAsync(filePath, done);
       }
     });
   }
 
-  _matchAssetsPattern(filePath, done) {
+  /**
+   * Get fileContent and filePaths to fingerprint into it
+   * @param  {String}   filePath File to fingerprint
+   * @param  {Function} done     Callback({fileContent, filePaths})
+   */
+  _getFingerprintAllData(filePath, done) {
     const that = this;
     fs.readFile(filePath, (err, data) => {
       const fileContent = data.toString();
@@ -276,7 +305,12 @@ class Fingerprint {
   }
 
   // Extract paths from filePath
-  _extractHashFromURL(filePath) {
+  /**
+   * Get HASH (#imahash) from an URL
+   * @param  {String} filePath Path to test
+   * @return {String}          Return hash if it exist if not, empty string
+   */
+  _getHashFromURL(filePath) {
     let finalHash = '';
     const param = filePath.match(this.options.paramettersPattern);
     if (param !== null) {
@@ -285,22 +319,39 @@ class Fingerprint {
     return finalHash;
   }
 
-  // Extract URL from url('>url<')
-  _extractURL(string) {
+  /**
+   * Get real path from an 'url(path)' in CSS content
+   * @param  {String} string CSS definition
+   * @return {String}        Real path
+   */
+  _getPathFromCSS(string) {
     return string.substring(string.lastIndexOf("(")+1,string.lastIndexOf(")")).replace(/\"/g,'').replace(/\'/g,"");
   }
 
-  // Escape strng for regex
-  _escapeStringToRegex(string) {
+  /**
+   * Convert string to searchable string regex
+   * @param  {String} string Path
+   * @return {String}        Valid regex string
+   */
+  _parseStringToRegex(string) {
     return string.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
   }
 
-  // IsFingerprintable
+  /**
+   * Test if environment permit to fingerprint file OR if we force it by flag
+   * @return {Boolean} Allow or not to fingerprint file
+   */
   _isFingerprintable() {
     return (Array.from(this.options.environments).includes(process.env.NODE_ENV || 'development')) || this.options.alwaysRun;
   }
 
-  // Clear all the fingerprinted files
+  /**
+   * Remove old fingerprinted files
+   * @param  {String}   dir  Path to file directory
+   * @param  {String}   base File name 
+   * @param  {String}   ext  File extension
+   * @param  {Function} done Callback(err)
+   */
   _clearOldFilesAsync(dir, base, ext, done) {
     // Find and remove file in dir/base-{hash}.ext
     const pattern = new RegExp(base + '\\-\\w+\\' + ext + '$');
@@ -310,18 +361,27 @@ class Fingerprint {
         const filePath = path.normalize(dir + '/' + oldFile);
         if (pattern.test(oldFile)) fs.unlink(filePath);
       }
-      done && done(null)
+      done && done()
     });
   }
 
-  // Make hash from fileContent
-  _makeHashFromFileContent(fileContent) {
+  /**
+   * Generate fingerprint signature from file content
+   * @param  {Buffer} fileContent File content buffer
+   * @return {String}             Fingerprint signature sized by hashLength
+   */
+  _getFingerprintFromFileContent(fileContent) {
     return CryptoJS.SHA1(fileContent.toString('utf8')).toString().substring(0, +(this.options.hashLength-1) + 1 || undefined);
   }
 
-  // Compose file name
-  _fingerprintCompose(filePath, fileContent) {
-    let hash = this._makeHashFromFileContent(fileContent);
+  /**
+   * Generate fingerprinted filePath from original file
+   * @param  {String} filePath    Path to file
+   * @param  {Buffer} fileContent File content Buffer
+   * @return {String}             Path to fingerprinted file
+   */
+  _getFingerprintedPath(filePath, fileContent) {
+    let hash = this._getFingerprintFromFileContent(fileContent);
     const dir   = path.dirname(filePath);
     const ext   = path.extname(filePath);
     const base  = path.basename(filePath, ext);
@@ -329,12 +389,16 @@ class Fingerprint {
     return path.join(dir, newName);
   }
 
-  // Rename file with his new fingerprint
+  /**
+   * Read and rename file with his fingerprint
+   * @param  {String}   filePath Path to file
+   * @param  {Function} done     Callback(err, fileNewName)
+   */
   _fingerprintFileAsync(filePath, done) {
     const that = this;
     fs.readFile(filePath, 'utf-8', (err, data) => {
       if (err) return done(err); // filePath + " does not exist !"
-      const fileNewName = that._fingerprintCompose(filePath, data);
+      const fileNewName = that._getFingerprintedPath(filePath, data);
       // Rename file, with hash
       fs.rename(filePath, fileNewName, () => {
         done && done(null, fileNewName);
@@ -342,8 +406,10 @@ class Fingerprint {
     })
   }
 
-  // Write manifest (Finish onCompile)
-  // Make array for manifest
+  /**
+   * Write manifest
+   * @param  {Function} done Callback(err)
+   */
   _writeManifestAsync(done) {
     fs.access(this.options.manifest, fs.constants.R_OK, (err) => {
       // Merge array to keep not watched files
@@ -355,7 +421,11 @@ class Fingerprint {
     });
   }
 
-  // Write a new manifest
+  /**
+   * Create Manifest
+   * @param  {Object|Function}  map  Object with {filePath: fileNewPath}
+   * @param  {Function}         done Callback(err)
+   */
   _createManifestAsync(map = null, done) {
     map = map == null ? this.map : map;
     // Map is obtionnable
@@ -375,7 +445,10 @@ class Fingerprint {
     }
   }
 
-  // Merging existing manifest with new entree
+  /**
+   * Merge current manifest with map
+   * @param  {Function} done Callback(err)
+   */
   _mergeManifestAsync(done) {
     const that = this;
     if (this._isFingerprintable() || this.options.manifestGenerationForce) {
