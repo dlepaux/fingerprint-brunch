@@ -140,32 +140,32 @@ describe('Fingerprint', () => {
 
     it('assets inner finded', function() {
       const samplePath = path.join(__dirname, 'public', 'css', 'sample.css');
-      fingerprint._getFingerprintAllData(samplePath, (data) => {
+      fingerprint._matchAssetsPattern(samplePath, (data) => {
         expect(data.filePaths).to.not.equal(null);
       });
     });
 
     it('extract params from url assets', function() {
       const url = 'http://github.com/dlepaux/fingerprint-brunch?test=test';
-      const hash = fingerprint._getHashFromURL(url);
+      const hash = fingerprint._extractHashFromURL(url);
       expect(hash).to.be.equal('?test=test');
     });
 
     it('extract hash from url assets', function() {
       const url = 'http://github.com/dlepaux/fingerprint-brunch#test=test';
-      const hash = fingerprint._getHashFromURL(url);
+      const hash = fingerprint._extractHashFromURL(url);
       expect(hash).to.be.equal('#test=test');
     });
 
     it('extract both from url assets', function() {
       const url = 'http://github.com/dlepaux/fingerprint-brunch?test=test#test';
-      const hash = fingerprint._getHashFromURL(url);
+      const hash = fingerprint._extractHashFromURL(url);
       expect(hash).to.be.equal('?test=test#test');
     });
 
     it('escape string for regexifisation', function() {
       let string = 'url(/img/test.png)';
-      string = fingerprint._parseStringToRegex(string);
+      string = fingerprint._escapeStringToRegex(string);
       expect(string).to.be.equal('url\\(\\/img\\/test\\.png\\)');
     });
   });
@@ -276,7 +276,7 @@ describe('Fingerprint', () => {
       it('add pair to map', function() {
         const sourcePath = path.join(fingerprint.options.publicRootPath, 'test/test.js');
         const destPath = path.join(fingerprint.options.publicRootPath, 'test/test-123456.js');
-        fingerprint._addPairToMap(sourcePath, destPath);
+        fingerprint._addToMap(sourcePath, destPath);
         expect(fingerprint.map[fingerprint.unixify(sourcePath)]).to.be.equal(fingerprint.unixify(destPath));
       });
     });
@@ -358,7 +358,7 @@ describe('Fingerprint', () => {
         fingerprint.options.manifestGenerationForce = true;
         // Add key/value to map
         Object.keys(MAP).forEach( function(key) {
-          fingerprint._addPairToMap(key, MAP[key]);
+          fingerprint._addToMap(key, MAP[key]);
         });
         fingerprint._mergeManifestAsync((err) => {
           fs.access(fingerprint.options.manifest, fs.constants.R_OK, (err) => {
@@ -372,7 +372,7 @@ describe('Fingerprint', () => {
         fingerprint.options.manifestGenerationForce = true;
         // Add key/value to map
         Object.keys(MAP).forEach( function(key) {
-          fingerprint._addPairToMap(key, MAP[key]);
+          fingerprint._addToMap(key, MAP[key]);
         });
         fs.writeFile(fingerprint.options.manifest, '{"hello/world":"hello/world"}', (err) => {
           fingerprint._mergeManifestAsync(() => {
@@ -391,7 +391,7 @@ describe('Fingerprint', () => {
 
       it('write manifest with createManifest', function(done) {
         Object.keys(MAP).forEach( function(key) {
-          fingerprint._addPairToMap(key, MAP[key]);
+          fingerprint._addToMap(key, MAP[key]);
         });
         fingerprint.options.manifestGenerationForce = true;
         fingerprint._writeManifestAsync(() => {
@@ -404,7 +404,7 @@ describe('Fingerprint', () => {
 
       it('write manifest with mergeManifest', function(done) {
         Object.keys(MAP).forEach( function(key) {
-          fingerprint._addPairToMap(key, MAP[key]);
+          fingerprint._addToMap(key, MAP[key]);
         });
 
         fs.writeFile(fingerprint.options.manifest, '{"hello/world":"hello/world"}', 'utf8', (err) => {
@@ -425,7 +425,7 @@ describe('Fingerprint', () => {
     it('should fingerprint file', function(done) {
       fingerprint.options.alwaysRun = true;
       const sourceFullPath = path.join(__dirname, 'public', 'css', 'sample.css');
-      fingerprint._fingerprintOneAsync(sourceFullPath, (err, filePath) => {
+      fingerprint._makeCoffee(sourceFullPath, (err, filePath) => {
         expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal('undefined');
         expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal(undefined);
         expect(fingerprint.map[fingerprint.unixify(filePath)]).to.be.not.equal(fingerprint.unixify(filePath));
@@ -472,13 +472,13 @@ describe('Fingerprint', () => {
   describe('AutoReplace sub assets', function() {
 
     it('extract url from css "url()" attribute', function() {
-      expect(fingerprint._getPathFromCSS('url("test.png")')).to.be.equal('test.png');
+      expect(fingerprint._extractURL('url("test.png")')).to.be.equal('test.png');
     });
 
     it('autoReplace in css sample', function(done) {
       fingerprint.options.alwaysRun = true;
       fingerprint.options.autoReplaceAndHash = true;
-      fingerprint._fingerprintAllAsync(path.join(__dirname, 'public', 'css', 'sample.css'), (err, filePath) => {
+      fingerprint._findAndReplaceSubAssetsAsync(path.join(__dirname, 'public', 'css', 'sample.css'), (err, filePath) => {
         // Expect parent file well fingerprinted
         expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal('undefined');
         expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal(undefined);
@@ -509,7 +509,7 @@ describe('Fingerprint', () => {
         expect(fingerprint.map[fingerprint.unixify(filePath)]).to.be.not.equal(fingerprint.unixify(filePath));
 
         // troll.png is in doublon
-        fingerprint._fingerprintAllAsync(path.join(__dirname, 'public', 'css', 'sample.css'), (err, filePath) => {
+        fingerprint._findAndReplaceSubAssetsAsync(path.join(__dirname, 'public', 'css', 'sample.css'), (err, filePath) => {
           // Expect parent file well fingerprinted
           expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal('undefined');
           expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal(undefined);
@@ -527,7 +527,7 @@ describe('Fingerprint', () => {
     it('autoReplace in css sample (without sub assets)', function(done) {
       fingerprint.options.alwaysRun = true;
       fingerprint.options.autoReplaceAndHash = true;
-      fingerprint._fingerprintAllAsync(path.join(__dirname, 'public', 'css', 'sample-3.css'), (err, filePath) => {
+      fingerprint._findAndReplaceSubAssetsAsync(path.join(__dirname, 'public', 'css', 'sample-3.css'), (err, filePath) => {
         // Expect parent file well fingerprinted
         expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal('undefined');
         expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal(undefined);
