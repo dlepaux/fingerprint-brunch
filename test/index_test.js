@@ -78,6 +78,7 @@ describe('Fingerprint', () => {
 
   // executed before each test
   beforeEach((done) => {
+    Fingerprint.initClass();
     fingerprint = new Fingerprint({
       environments: ['production'],
       paths: {
@@ -100,7 +101,8 @@ describe('Fingerprint', () => {
   // executed after each test
   afterEach((done) => {
     fse.remove(path.join(__dirname, 'public'), () => {
-      done()
+      fingerprint = null;
+      done();
     });
   });
 
@@ -129,7 +131,7 @@ describe('Fingerprint', () => {
   // Testing Unixifysiation
   describe('Unixify', function() {
     it('should work', function() {
-      expect(fingerprint.unixify('c:\\Users\\project\\fingerprint-brunch')).to.be.equal('c:/Users/project/fingerprint-brunch');
+      expect(fingerprint.unixify('c:\\Users\\JohnDoe\\project\\fingerprint-brunch')).to.be.equal('c:/Users/JohnDoe/project/fingerprint-brunch');
     });
   });
 
@@ -138,32 +140,32 @@ describe('Fingerprint', () => {
 
     it('assets inner finded', function() {
       const samplePath = path.join(__dirname, 'public', 'css', 'sample.css');
-      fingerprint._matchAssetsPattern(samplePath, (data) => {
+      fingerprint._getFingerprintAllData(samplePath, (data) => {
         expect(data.filePaths).to.not.equal(null);
       });
     });
 
     it('extract params from url assets', function() {
       const url = 'http://github.com/dlepaux/fingerprint-brunch?test=test';
-      const hash = fingerprint._extractHashFromURL(url);
+      const hash = fingerprint._getHashFromURL(url);
       expect(hash).to.be.equal('?test=test');
     });
 
     it('extract hash from url assets', function() {
       const url = 'http://github.com/dlepaux/fingerprint-brunch#test=test';
-      const hash = fingerprint._extractHashFromURL(url);
+      const hash = fingerprint._getHashFromURL(url);
       expect(hash).to.be.equal('#test=test');
     });
 
     it('extract both from url assets', function() {
       const url = 'http://github.com/dlepaux/fingerprint-brunch?test=test#test';
-      const hash = fingerprint._extractHashFromURL(url);
+      const hash = fingerprint._getHashFromURL(url);
       expect(hash).to.be.equal('?test=test#test');
     });
 
     it('escape string for regexifisation', function() {
       let string = 'url(/img/test.png)';
-      string = fingerprint._escapeStringToRegex(string);
+      string = fingerprint._parseStringToRegex(string);
       expect(string).to.be.equal('url\\(\\/img\\/test\\.png\\)');
     });
   });
@@ -274,13 +276,14 @@ describe('Fingerprint', () => {
       it('add pair to map', function() {
         const sourcePath = path.join(fingerprint.options.publicRootPath, 'test/test.js');
         const destPath = path.join(fingerprint.options.publicRootPath, 'test/test-123456.js');
-        fingerprint._addToMap(sourcePath, destPath);
+        fingerprint._addPairToMap(sourcePath, destPath);
         expect(fingerprint.map[fingerprint.unixify(sourcePath)]).to.be.equal(fingerprint.unixify(destPath));
       });
     });
 
     describe('_createAsync', function() {
       it('create with param (MAP)', function(done) {
+        fingerprint.options.alwaysRun = true;
         fingerprint._createManifestAsync(MAP, (err) => {
           fs.access(fingerprint.options.manifest, fs.constants.R_OK, (err) => {
             expect(!err?true:false).to.be.true;
@@ -291,6 +294,7 @@ describe('Fingerprint', () => {
 
       it('create with this.map setted', function(done) {
         fingerprint.map = MAP;
+        fingerprint.options.alwaysRun = true;
         fingerprint._createManifestAsync((err) => {
           fs.access(fingerprint.options.manifest, fs.constants.R_OK, (err) => {
             expect(!err?true:false).to.be.true;
@@ -301,8 +305,6 @@ describe('Fingerprint', () => {
 
       it('create (forced)', function(done) {
         fingerprint.options.manifestGenerationForce = true;
-        fingerprint.options.environments = [];
-        fingerprint.options.alwaysRun = false;
         fingerprint._createManifestAsync(MAP, (err) => {
           fs.access(fingerprint.options.manifest, fs.constants.R_OK, (err) => {
             expect(!err?true:false).to.be.true;
@@ -312,9 +314,10 @@ describe('Fingerprint', () => {
       });
 
       it('create with a unvalid name (?)', function(done) {
+        fingerprint.options.manifestGenerationForce = true;
         fingerprint.options.manifest = './test/public/ass\0ets.json';
         fingerprint._createManifestAsync(MAP, (err) => {
-          expect(err).to.be.instanceOf(Error)
+          expect(err).to.be.instanceOf(Error);
           expect(err).to.not.equal(null);
           done();
         });
@@ -355,7 +358,7 @@ describe('Fingerprint', () => {
         fingerprint.options.manifestGenerationForce = true;
         // Add key/value to map
         Object.keys(MAP).forEach( function(key) {
-          fingerprint._addToMap(key, MAP[key]);
+          fingerprint._addPairToMap(key, MAP[key]);
         });
         fingerprint._mergeManifestAsync((err) => {
           fs.access(fingerprint.options.manifest, fs.constants.R_OK, (err) => {
@@ -369,7 +372,7 @@ describe('Fingerprint', () => {
         fingerprint.options.manifestGenerationForce = true;
         // Add key/value to map
         Object.keys(MAP).forEach( function(key) {
-          fingerprint._addToMap(key, MAP[key]);
+          fingerprint._addPairToMap(key, MAP[key]);
         });
         fs.writeFile(fingerprint.options.manifest, '{"hello/world":"hello/world"}', (err) => {
           fingerprint._mergeManifestAsync(() => {
@@ -388,9 +391,9 @@ describe('Fingerprint', () => {
 
       it('write manifest with createManifest', function(done) {
         Object.keys(MAP).forEach( function(key) {
-          fingerprint._addToMap(key, MAP[key]);
+          fingerprint._addPairToMap(key, MAP[key]);
         });
-
+        fingerprint.options.manifestGenerationForce = true;
         fingerprint._writeManifestAsync(() => {
           fs.access(fingerprint.options.manifest, fs.constants.R_OK, (err) => {
             expect(!err?true:false).to.be.true;
@@ -401,7 +404,7 @@ describe('Fingerprint', () => {
 
       it('write manifest with mergeManifest', function(done) {
         Object.keys(MAP).forEach( function(key) {
-          fingerprint._addToMap(key, MAP[key]);
+          fingerprint._addPairToMap(key, MAP[key]);
         });
 
         fs.writeFile(fingerprint.options.manifest, '{"hello/world":"hello/world"}', 'utf8', (err) => {
@@ -422,7 +425,7 @@ describe('Fingerprint', () => {
     it('should fingerprint file', function(done) {
       fingerprint.options.alwaysRun = true;
       const sourceFullPath = path.join(__dirname, 'public', 'css', 'sample.css');
-      fingerprint._makeCoffee(sourceFullPath, (err, filePath) => {
+      fingerprint._fingerprintOneAsync(sourceFullPath, (err, filePath) => {
         expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal('undefined');
         expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal(undefined);
         expect(fingerprint.map[fingerprint.unixify(filePath)]).to.be.not.equal(fingerprint.unixify(filePath));
@@ -432,7 +435,8 @@ describe('Fingerprint', () => {
 
     it('should not fingerprint file', function(done) {
       fingerprint.options.alwaysRun = false;
-      fingerprint._makeCoffee(path.join(__dirname, 'public', 'css', 'sample.css'), (err, filePath) => {
+      fingerprint.options.environments = [];
+      fingerprint._fingerprintOneAsync(path.join(__dirname, 'public', 'css', 'sample.css'), (err, filePath) => {
         expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal('undefined');
         expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal(undefined);
         expect(fingerprint.map[fingerprint.unixify(filePath)]).to.be.equal(fingerprint.unixify(filePath));
@@ -458,6 +462,7 @@ describe('Fingerprint', () => {
     });
 
     it('does run in production environment', function() {
+      process.env.NODE_ENV = 'production';
       fingerprint.options.environments = ['production'];
       expect(fingerprint._isFingerprintable()).to.be.true;
     });
@@ -467,13 +472,13 @@ describe('Fingerprint', () => {
   describe('AutoReplace sub assets', function() {
 
     it('extract url from css "url()" attribute', function() {
-      expect(fingerprint._extractURL('url("test.png")')).to.be.equal('test.png');
+      expect(fingerprint._getPathFromCSS('url("test.png")')).to.be.equal('test.png');
     });
 
     it('autoReplace in css sample', function(done) {
       fingerprint.options.alwaysRun = true;
       fingerprint.options.autoReplaceAndHash = true;
-      fingerprint._findAndReplaceSubAssetsAsync(path.join(__dirname, 'public', 'css', 'sample.css'), (err, filePath) => {
+      fingerprint._fingerprintAllAsync(path.join(__dirname, 'public', 'css', 'sample.css'), (err, filePath) => {
         // Expect parent file well fingerprinted
         expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal('undefined');
         expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal(undefined);
@@ -491,8 +496,7 @@ describe('Fingerprint', () => {
     it('autoReplace in css sample (with doublon in map)', function(done) {
       fingerprint.options.alwaysRun = true;
       fingerprint.options.autoReplaceAndHash = true;
-      fingerprint.map = {};
-      fingerprint._findAndReplaceSubAssetsAsync(path.join(__dirname, 'public', 'css', 'sample-2.css'), (err, filePath) => {
+      fingerprint._fingerprintAllAsync(path.join(__dirname, 'public', 'css', 'sample-2.css'), (err, filePath) => {
         // Expect parent file well fingerprinted
         expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal('undefined');
         expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal(undefined);
@@ -505,7 +509,7 @@ describe('Fingerprint', () => {
         expect(fingerprint.map[fingerprint.unixify(filePath)]).to.be.not.equal(fingerprint.unixify(filePath));
 
         // troll.png is in doublon
-        fingerprint._findAndReplaceSubAssetsAsync(path.join(__dirname, 'public', 'css', 'sample.css'), (err, filePath) => {
+        fingerprint._fingerprintAllAsync(path.join(__dirname, 'public', 'css', 'sample.css'), (err, filePath) => {
           // Expect parent file well fingerprinted
           expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal('undefined');
           expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal(undefined);
@@ -523,7 +527,7 @@ describe('Fingerprint', () => {
     it('autoReplace in css sample (without sub assets)', function(done) {
       fingerprint.options.alwaysRun = true;
       fingerprint.options.autoReplaceAndHash = true;
-      fingerprint._findAndReplaceSubAssetsAsync(path.join(__dirname, 'public', 'css', 'sample-3.css'), (err, filePath) => {
+      fingerprint._fingerprintAllAsync(path.join(__dirname, 'public', 'css', 'sample-3.css'), (err, filePath) => {
         // Expect parent file well fingerprinted
         expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal('undefined');
         expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal(undefined);
@@ -534,9 +538,100 @@ describe('Fingerprint', () => {
   });
 
   // Matching assets to hash
-  describe('Full Test with onCompile', function() {
+  describe('Fingerprint specific file', function() {
+    it('should fingerprint one file', function(done) {
+      fingerprint.options.alwaysRun = true;
+      fingerprint.options.environments = ['development'];
+      fingerprint.options.assetsToFingerprint = ['/img/oh-yeah.png'];
+      fingerprint._fingerprintAllResolver(fingerprint.options.assetsToFingerprint, (resolve) => {
+        resolve();
+      }, () => {
+        let filePath = 'test/public/img/oh-yeah.png';
+        expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal('undefined');
+        expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal(undefined);
+        expect(fingerprint.map[fingerprint.unixify(filePath)]).to.be.not.equal(fingerprint.unixify(filePath));  
+        done();
+      });
+    });
 
+    it('should fingerprint multiple files', function(done) {
+      fingerprint.options.alwaysRun = true;
+      fingerprint.options.environments = ['development'];
+      fingerprint.options.assetsToFingerprint = ['/img/oh-yeah.png', '/fonts/font.ttf', '/fonts/font-relative.ttf'];
+      fingerprint._fingerprintAllResolver(fingerprint.options.assetsToFingerprint, (resolve) => {
+        resolve();
+      }, () => {
+        let filePath = 'test/public/img/oh-yeah.png';
+        expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal('undefined');
+        expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal(undefined);
+        expect(fingerprint.map[fingerprint.unixify(filePath)]).to.be.not.equal(fingerprint.unixify(filePath));
+
+        filePath = 'test/public/fonts/font.ttf';
+        expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal('undefined');
+        expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal(undefined);
+        expect(fingerprint.map[fingerprint.unixify(filePath)]).to.be.not.equal(fingerprint.unixify(filePath));
+
+        filePath = 'test/public/fonts/font-relative.ttf';
+        expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal('undefined');
+        expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal(undefined);
+        expect(fingerprint.map[fingerprint.unixify(filePath)]).to.be.not.equal(fingerprint.unixify(filePath));
+        done();
+      });
+    });
+  });
+
+  // Matching assets to hash
+  describe('Fingerprint folder', function() {
+    it('should fingerprint files into specific folder', function(done) {
+      fingerprint.options.alwaysRun = true;
+      fingerprint.options.foldersToFingerprint = '/img';
+      fingerprint._fingerprintDir(fingerprint.options.foldersToFingerprint, () => {
+        let filePath = 'test/public/img/oh-yeah.png';
+        expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal('undefined');
+        expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal(undefined);
+        expect(fingerprint.map[fingerprint.unixify(filePath)]).to.be.not.equal(fingerprint.unixify(filePath));
+        filePath = 'test/public/img/troll.png';
+        expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal('undefined');
+        expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal(undefined);
+        expect(fingerprint.map[fingerprint.unixify(filePath)]).to.be.not.equal(fingerprint.unixify(filePath));  
+        done();
+      });
+    });
+
+    it('should fingerprint files into specific folders', function(done) {
+      fingerprint.options.alwaysRun = true;
+      fingerprint.options.foldersToFingerprint = ['/img', '/fonts'];
+      fingerprint._fingerprintDirs(fingerprint.options.foldersToFingerprint, (err) => {
+        let filePath = 'test/public/img/oh-yeah.png';
+        expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal('undefined');
+        expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal(undefined);
+        expect(fingerprint.map[fingerprint.unixify(filePath)]).to.be.not.equal(fingerprint.unixify(filePath));
+        filePath = 'test/public/img/troll.png';
+        expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal('undefined');
+        expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal(undefined);
+        expect(fingerprint.map[fingerprint.unixify(filePath)]).to.be.not.equal(fingerprint.unixify(filePath));  
+        filePath = 'test/public/fonts/font-relative.woff';
+        expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal('undefined');
+        expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal(undefined);
+        expect(fingerprint.map[fingerprint.unixify(filePath)]).to.be.not.equal(fingerprint.unixify(filePath));  
+        done();
+      });
+    });
+
+    it('should fingerprint files into specific folders (with err)', function(done) {
+      fingerprint.options.alwaysRun = true;
+      fingerprint.options.foldersToFingerprint = ['/img', '/fonts', '/wrong-path'];
+      fingerprint._fingerprintDirs(fingerprint.options.foldersToFingerprint, (err) => {
+        expect(err).to.be.instanceOf(Error);
+        done();
+      });
+    });
+  });
+
+  // Matching assets to hash
+  describe('Full Test with onCompile', function() {
     it('test with one file (with autoReplace)', function(done) {
+      fingerprint.options.autoReplaceAndHash = true;
       fingerprint.onCompile([{path: path.join(__dirname, 'public', 'js', 'sample.js')}], (filePath) => {
         expect(filePath).to.be.not.null();
         done();
@@ -558,6 +653,70 @@ describe('Fingerprint', () => {
         done();
       });
     });
+
+    it('test with one file (with extra files : assetsToFingerprint)', function(done) {
+      fingerprint.options.alwaysRun = true;
+      fingerprint.options.assetsToFingerprint = ['/img/oh-yeah.png', '/fonts/font.ttf', '/fonts/font-relative.ttf'];
+      fingerprint.onCompile([{path: path.join(__dirname, 'public', 'js', 'sample.js')}], (filePath) => {
+        expect(filePath).to.be.not.null();
+
+        filePath = 'test/public/img/oh-yeah.png';
+        expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal('undefined');
+        expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal(undefined);
+        expect(fingerprint.map[fingerprint.unixify(filePath)]).to.be.not.equal(fingerprint.unixify(filePath));
+
+        filePath = 'test/public/fonts/font.ttf';
+        expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal('undefined');
+        expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal(undefined);
+        expect(fingerprint.map[fingerprint.unixify(filePath)]).to.be.not.equal(fingerprint.unixify(filePath));
+
+        filePath = 'test/public/fonts/font-relative.ttf';
+        expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal('undefined');
+        expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal(undefined);
+        expect(fingerprint.map[fingerprint.unixify(filePath)]).to.be.not.equal(fingerprint.unixify(filePath));
+
+        done();
+      });
+    });
+
+    it('test with one file (with extra files : foldersToFingerprint array)', function(done) {
+      fingerprint.options.alwaysRun = true;
+      fingerprint.options.foldersToFingerprint = ['/img', '/fonts'];
+      fingerprint.onCompile([{path: path.join(__dirname, 'public', 'js', 'sample-3.js')}], (filePath) => {
+        expect(filePath).to.be.not.null();
+
+        filePath = 'test/public/img/oh-yeah.png';
+        expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal('undefined');
+        expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal(undefined);
+        expect(fingerprint.map[fingerprint.unixify(filePath)]).to.be.not.equal(fingerprint.unixify(filePath));
+
+        filePath = 'test/public/fonts/font.ttf';
+        expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal('undefined');
+        expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal(undefined);
+        expect(fingerprint.map[fingerprint.unixify(filePath)]).to.be.not.equal(fingerprint.unixify(filePath));
+
+        filePath = 'test/public/fonts/font-relative.ttf';
+        expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal('undefined');
+        expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal(undefined);
+        expect(fingerprint.map[fingerprint.unixify(filePath)]).to.be.not.equal(fingerprint.unixify(filePath));
+
+        done();
+      });
+    });
+
+    it('test with one file (with extra files : foldersToFingerprint string)', function(done) {
+      fingerprint.options.alwaysRun = true;
+      fingerprint.options.foldersToFingerprint = '/img';
+      fingerprint.onCompile([{path: path.join(__dirname, 'public', 'js', 'sample-3.js')}], (filePath) => {
+        expect(filePath).to.be.not.null();
+
+        filePath = 'test/public/img/oh-yeah.png';
+        expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal('undefined');
+        expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal(undefined);
+        expect(fingerprint.map[fingerprint.unixify(filePath)]).to.be.not.equal(fingerprint.unixify(filePath));
+
+        done();
+      });
+    });
   });
 });
-      
