@@ -12,7 +12,7 @@
   "main": "./src/index.js",
   "scripts": {
     "test": "node_modules/.bin/mocha --compilers js:babel-core/register",
-    "local-test": "nyc --reporter=text-lcov npm test",
+    "local-test": "nyc --reporter=html npm test",
     "coverage": "nyc --reporter=text-lcov npm test | coveralls",
     "coveralls": "nyc --reporter=text-lcov npm test && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage"
   },
