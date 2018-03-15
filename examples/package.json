@@ -1,18 +1,20 @@
 {
   "name": "fingerprint-brunch-example",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Boilerplate for fingerprint-brunch",
   "repository ": {
     "type": "git",
     "url": "git://github.com/dlepaux/fingerprint-brunch.git"
   },
-  "author": "David Lepaux <david@lovelivemusic.fr>",
+  "author": "David Lepaux <d.lepaux@gmail.com>",
   "license": "MIT",
   "scripts": {
     "watch": "brunch w"
   },
+  "dependencies": {
+    "brunch": "^2.10.10"
+  },
   "devDependencies": {
-    "brunch": "^2.10.10",
     "clean-css-brunch": "^2.10.0",
     "css-brunch": "^2.10.0",
     "fingerprint-brunch": "^2.0.0",
