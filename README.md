@@ -17,9 +17,6 @@ You're allow to fingerprint specific files, assets folders, generated files and 
 - [Contributing](#contributing)
 - [License](#license)
 
-[![NPM](https://nodei.co/npm/fingerprint-brunch.png)](https://nodei.co/npm/fingerprint-brunch/)
-[![NPM](https://nodei.co/npm-dl/fingerprint-brunch.png?months=3)](https://nodei.co/npm/fingerprint-brunch/)
-
 ## <a name="installation"></a> Installation
 
 `npm install fingerprint-brunch --save-dev`
@@ -139,9 +136,3 @@ The Software is provided “as is”, without warranty of any kind, express or i
 [Brunch]: http://brunch.io
 [travis]: https://travis-ci.org/dlepaux/fingerprint-brunch
 [travis-badge]: https://img.shields.io/travis/dlepaux/fingerprint-brunch.svg?style=flat
-
-
-# Todo
-- Add option to fingerprint some specific assets
-  - By configure it by naming it specifically
-  - By configure a path (in public from assets) and resolve all
