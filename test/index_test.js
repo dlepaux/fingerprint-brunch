@@ -718,5 +718,15 @@ describe('Fingerprint', () => {
         done();
       });
     });
+
+    it('test compile a file with an empty manifest', function(done) {
+      fs.writeFile(fingerprint.options.manifest, '', (err) => {
+        if (err) return done && done(err);
+        fingerprint.onCompile([{path: path.join(__dirname, 'public', 'js', 'sample.js')}], (filePath) => {
+          expect(filePath).to.be.not.null();
+          done();
+        });
+      });
+    });
   });
 });
