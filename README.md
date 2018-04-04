@@ -1,4 +1,4 @@
-# fingerprint-brunch [![Greenkeeper badge](https://badges.greenkeeper.io/dlepaux/fingerprint-brunch.svg)](https://greenkeeper.io/) [![Build Status](https://travis-ci.org/dlepaux/fingerprint-brunch.svg?branch=master)](https://travis-ci.org/dlepaux/fingerprint-brunch) [![Join the chat at https://gitter.im/dlepaux/fingerprint-brunch](https://badges.gitter.im/dlepaux/fingerprint-brunch.svg)](https://gitter.im/dlepaux/fingerprint-brunch?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![npm](https://img.shields.io/npm/l/express.svg)]()
+# fingerprint-brunch [![Greenkeeper badge](https://badges.greenkeeper.io/dlepaux/fingerprint-brunch.svg)](https://greenkeeper.io/) [![Build Status](https://travis-ci.org/dlepaux/fingerprint-brunch.svg?branch=master)](https://travis-ci.org/dlepaux/fingerprint-brunch) [![Join the chat at https://gitter.im/dlepaux/fingerprint-brunch](https://badges.gitter.im/dlepaux/fingerprint-brunch.svg)](https://gitter.im/dlepaux/fingerprint-brunch?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 <p align="center">
   <p align="center">
