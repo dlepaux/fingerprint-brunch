@@ -22,7 +22,7 @@
   },
   "dependencies": {    
     "crypto-js": "^3.1.9-1",
-    "fs-extra": "~5.0.0"
+    "fs-extra": "~6.0.0"
   },
   "devDependencies": {
     "babel-core": "^6.1.2",
