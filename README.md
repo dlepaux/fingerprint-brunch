@@ -6,9 +6,9 @@
   </p>
 </p>
 
-A [Brunch][] plugin witch rename assets with a SHA (generate from file content) to fingerprinted it.
+A [Brunch][] plugin which renames assets with a SHA (generated from file content) to fingerprint it.
 
-You're allow to fingerprint specific files, assets folders, generated files and css linked assets.
+You're allowed to fingerprint specific files, assets folders, generated files and css linked assets.
 
 - [Installation](#installation)
 - [Usage](#usage)
