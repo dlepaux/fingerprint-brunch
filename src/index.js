@@ -359,7 +359,9 @@ class Fingerprint {
       if (err) return done && done(err);
       for (let oldFile of Array.from(files)) {
         const filePath = path.normalize(dir + '/' + oldFile);
-        if (pattern.test(oldFile)) fs.unlink(filePath);
+        if (pattern.test(oldFile)) fs.unlink(filePath, function(err) {
+          if (err) return done && done(err);
+        });
       }
       done && done()
     });
