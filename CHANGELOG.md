@@ -2,6 +2,13 @@
 
 ### v2.?
 
+### v2.0.5
+- Update package, babel dependencies
+- Add error callback in \_createManifestAsync
+
+### v2.0.4
+- Bug fixes
+
 ### v2.0.3
 - Update package dependencies
 - Bug fixes
