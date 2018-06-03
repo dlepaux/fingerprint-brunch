@@ -322,8 +322,8 @@ describe('Fingerprint', () => {
             expect(err).to.not.equal(null);
           });
         } catch (e) {
-          expect(err).to.be.instanceOf(Error);
-          expect(err).to.not.equal(null);
+          expect(e).to.be.instanceOf(Error);
+          expect(e).to.not.equal(null);
           done();
         }
 
