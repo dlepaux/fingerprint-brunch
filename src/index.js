@@ -457,6 +457,8 @@ class Fingerprint {
     const that = this;
     if (this._isFingerprintable() || this.options.manifestGenerationForce) {
       fs.readFile(this.options.manifest, 'utf-8', (err, data) => {
+        console.log(err);
+        console.log(typeof err);
         if (err || data == '') return that._createManifestAsync(done);
         let manifest = JSON.parse(data);
         // Merge previous manifest with map
