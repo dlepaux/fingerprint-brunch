@@ -316,10 +316,12 @@ describe('Fingerprint', () => {
       it('create with a unvalid name (?)', function(done) {
         fingerprint.options.manifestGenerationForce = true;
         fingerprint.options.manifest = './test/public/ass\0ets.json';
+        // With Node 10, we wrap thios in a try catch because it cause a fatal execution error
         try {
           fingerprint._createManifestAsync(MAP, (err) => {
             expect(err).to.be.instanceOf(Error);
             expect(err).to.not.equal(null);
+            done();
           });
         } catch (e) {
           expect(e).to.be.instanceOf(Error);
