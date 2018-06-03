@@ -317,6 +317,8 @@ describe('Fingerprint', () => {
         fingerprint.options.manifestGenerationForce = true;
         fingerprint.options.manifest = './test/public/ass\0ets.json';
         fingerprint._createManifestAsync(MAP, (err) => {
+          console.log(err);
+          console.log(typeof err);
           expect(err).to.be.instanceOf(Error);
           expect(err).to.not.equal(null);
           done();
