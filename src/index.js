@@ -439,6 +439,8 @@ class Fingerprint {
     if (this._isFingerprintable() || this.options.manifestGenerationForce) {
       const output = JSON.stringify(map, null, "  ");
       fs.writeFile(this.options.manifest, output, (err) => {
+        console.log(err);
+        console.log(typeof err);
         if (err) return done && done(err);
         done && done();
       });
