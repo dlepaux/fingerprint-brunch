@@ -24,6 +24,8 @@ You're allowed to fingerprint specific files, assets folders, generated files an
 
 ## <a name="usage"></a> Usage
 
+You can find [here](https://github.com/dlepaux/fingerprint-brunch-example) a working setup with fingerprint-brunch  
+
 ### Configuration
 
 _Optional_ You can override fingerprint-brunch's default options by updating your `brunch-config.coffee` with your custom parameters.
