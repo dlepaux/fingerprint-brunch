@@ -32,7 +32,7 @@ _Optional_ You can override fingerprint-brunch's default options by updating you
 
 * __manifest__: _(`String`)_ Defaults to `./assets.json`
   - Mapping fingerprinted files
-* __srcBasePath__: _(`String`)_ Defaults to `exemple/`
+* __srcBasePath__: _(`String`)_ Defaults to `example/`
   - The base Path you want to remove from the `key` string in the mapping file
 * __destBasePath__: _(`String`)_ Defaults to `out/`
   - The base Path you want to remove from the `value` string in the mapping file
