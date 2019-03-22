@@ -104,8 +104,8 @@ exports.config =
 ##### Fingerprint All
 To get this kind of result in your manifest you need to :
 - Set `autoReplaceAndHash` to `true`
-- Or set `foldersToFingerprint` pointing to one folder (or many) `./img`
-- Or set `assetsToFingerprint` pointing to a file (or many) `./img/troll.png`
+- Or set `foldersToFingerprint` pointing to one folder `./img`, or many `['./img', './svg']`
+- Or set `assetsToFingerprint` pointing to files `['./img/troll.png']`
 
 ##### Cleaning Manifest
 
