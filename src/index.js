@@ -35,7 +35,7 @@ class Fingerprint {
       // Force the generation of the manifest, event if there are no fingerprinted files
       manifestGenerationForce: false,
       // Asset to fingerprint (in public), files will be fingerprinted and added to the manifest
-      foldersToFingerprint: false, // or ['/img'] or ['/img', '/svg']
+      foldersToFingerprint: false, // or '/img' or ['/img', '/svg']
       // Specific asset to fingerprint (in public)
       assetsToFingerprint: false, // or ['/img/troll.png'] or ['/img/troll.png', '/svg/logo.svg']
 

@@ -57,9 +57,9 @@ _Optional_ You can override fingerprint-brunch's default options by updating you
 * __foldersToFingerprint__: _(`Boolean|String|Array`)_ Defaults to  `false`
   - Asset to fingerprint (in brunch config `public`), all files will be fingerprinted and added to the manifest
   - Usage : `'/img'` or `['/img', '/svg']`
-* __assetsToFingerprint__: _(`Boolean|String|Array`)_ Defaults to `false`
+* __assetsToFingerprint__: _(`Boolean|Array`)_ Defaults to `false`
   - Specific asset to fingerprint (in public)
-  - Usage : `'/img/troll.png'` or `['/img/troll.png', '/svg/logo.svg']`
+  - Usage : `['/img/troll.png']` or `['/img/troll.png', '/svg/logo.svg']`
 * __assetsPatterns__: _(`RegExp Object`)_ Defaults to `new RegExp(/url\([\'\"]?[a-zA-Z0-9\-\/_.:]+\.(woff|woff2|eot|ttf|otf|jpg|jpeg|png|bmp|gif|svg)\??\#?[a-zA-Z0-9\-\/_]*[\'\"]?\)/g)`
   - Regex to match assets in css with `url()` attribute
 * __paramettersPattern__: _(`Regex`)_ Defaults to `/(\?|\&|\#)([^=]?)([^&]*)/gm`
