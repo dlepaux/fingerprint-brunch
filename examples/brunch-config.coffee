@@ -25,11 +25,10 @@ exports.config =
     fingerprint:
       # Mapping file so your server can serve the right files
       targets: '*'
+      autoClearOldFiles: true,
       environments: ['production']
-      alwaysRun: true
-      autoReplaceAndHash: true
       manifest: './assets.json'
       publicRootPath: './public'
       srcBasePath: './public'
       destBasePath: './public'
-      assetsToFingerprint: '/img/troll.png'
+      assetsToFingerprint: ['/img/troll.png']

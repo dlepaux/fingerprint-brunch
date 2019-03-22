@@ -70,7 +70,7 @@ class Fingerprint {
 
     // onCompile is ended
     const onCompileEnded = (err, filePath) => {
-      if (that.options.foldersToFingerprint) {
+      if (that.options.foldersToFingerprint && that._isFingerprintable()) {
         let callee = '_fingerprintDirs';
         if (typeof(that.options.foldersToFingerprint) == 'string') callee = '_fingerprintDir';
         return that[callee](that.options.foldersToFingerprint, () => {
@@ -78,7 +78,7 @@ class Fingerprint {
             typeof(callback) == 'function' && callback(filePath);
           });
         })
-      } else if (that.options.assetsToFingerprint) {
+      } else if (that.options.assetsToFingerprint && that._isFingerprintable()) {
         return that._fingerprintAllResolver(that.options.assetsToFingerprint, (resolve) => resolve(), () => {
           that._writeManifestAsync(() => {
             typeof(callback) == 'function' && callback(filePath);
