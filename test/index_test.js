@@ -94,7 +94,7 @@ describe('Fingerprint', () => {
       }
     });
     setupFakeFileSystem(() => {
-      done()
+      done();
     });
   });
 
@@ -551,11 +551,16 @@ describe('Fingerprint', () => {
       fingerprint.options.autoReplaceAndHash = true;
       fingerprint.options.assetsPrefix = 'TestPrefix';
       fingerprint._fingerprintAllAsync(path.join(__dirname, 'public', 'css', 'sample-2.css'), (err, filePath) => {
-        fs.readFile(filePath, (err, data) => {
-          expect(data).to.match(/url\(TestPrefix\/img\/troll.png\)/)
+        expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal('undefined');
+        expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal(undefined);
+        
+        fs.access(fingerprint.unixify(fingerprint.map[fingerprint.unixify(filePath)]), (err) => {
+          fs.readFile(fingerprint.unixify(fingerprint.map[fingerprint.unixify(filePath)]), 'utf-8', (err, data) => {
+            expect(data).to.match(/TestPrefix\/img\/troll/);
+            done();
+          });
         });
       });
-      done()
     });
   });
 
