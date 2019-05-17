@@ -30,6 +30,8 @@ class Fingerprint {
       alwaysRun: false,
       // autoReplaceAndHash assets in css/js, like a font linked in an url() in your css
       autoReplaceAndHash: false,
+      // prefix to prepend to assets replaced in css/js files
+      assetsPrefix: false,
       // public root path ( for multi theme support) !!! put a './' before your path
       publicRootPath: './public',
       // Force the generation of the manifest, event if there are no fingerprinted files
@@ -270,8 +272,12 @@ class Fingerprint {
     this._getFingerprintAllData(filePath, (data) => {
       if (data.filePaths !== null) {
         that._fingerprintAllResolver(data.filePaths, (resolve, targetNewName, finalHash, match) => {
+          targetNewName = that.unixify(targetNewName.substring(that.options.publicRootPath.length - 2));
+          if (that.options.assetsPrefix) {
+            targetNewName = `${that.options.assetsPrefix}${targetNewName}`;
+          }
           // Add real path into the css file
-          data.fileContent = data.fileContent.replace(match, `url('${that.unixify(targetNewName.substring(that.options.publicRootPath.length - 2))}${finalHash}')`);
+          data.fileContent = data.fileContent.replace(match, `url('${targetNewName}${finalHash}')`);
           resolve();
         }, () => {
           let fileNewName = filePath;

@@ -48,6 +48,8 @@ _Optional_ You can override fingerprint-brunch's default options by updating you
   - Force fingerprint-brunch to run in all environments when true.
 * __autoReplaceAndHash__: _(`Boolean`)_ Defaults to `false`
   - Find assets in your `jointTo` files. It will be finded with `url('path/to/assets.jpg')` in your css (for now)
+* __assetsPrefix__: _(`Boolean|String`)_ Defaults to `false`
+  - Prefix to prepend to replaced assets.
 * __publicRootPath__: _(`string`)_ Defaults to `/public`
   - For support multiple themes, you can set the public root path, exemple :
   - My config.paths.public is `../../public/theme/theme-1/` in `css` your fonts, images will be linked like that : `/theme/theme-1/img/troll.png`. 
@@ -114,6 +116,35 @@ Use `srcBasePath` and `destBasePath` to remove some part of path files in the ma
 
 ## <a name="options"></a> Options
 
+### assetsPrefix
+
+Sometimes you may want to add a prefix to assets when replacing their path in your compiled css/js.
+
+Say you have a CSS file containing:
+
+```css
+.logo {
+  background-image: url('logo.svg');
+}
+```
+
+once replaced, the content would look like:
+
+```css
+.logo {
+  background-image: url('logo-f98d59ab3.svg');
+}
+```
+
+if you were to set `assetsPrefix: '/custom/'` the result would be:
+
+```css
+.logo {
+  background-image: url('/custom/logo-f98d59ab3.svg');
+}
+```
+
+_Note: This could also be leveraged to prepend a CDN url for instance._
 
 ## <a name="testing"></a> Testing / Issues
 
