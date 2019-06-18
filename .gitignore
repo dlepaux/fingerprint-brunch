@@ -6,4 +6,3 @@ coverage
 test/public
 assets.json
 examples/public/*
-package-lock.json
