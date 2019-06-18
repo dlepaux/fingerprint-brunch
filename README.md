@@ -12,7 +12,6 @@ You're allowed to fingerprint specific files, assets folders, generated files an
 
 - [Installation](#installation)
 - [Usage](#usage)
-- [Options](#options)
 - [Testing / Issues](#testing)
 - [Contributing](#contributing)
 - [License](#license)
@@ -110,9 +109,6 @@ To get this kind of result in your manifest you need to :
 ##### Cleaning Manifest
 
 Use `srcBasePath` and `destBasePath` to remove some part of path files in the manifest.
-
-
-## <a name="options"></a> Options
 
 
 ## <a name="testing"></a> Testing / Issues
