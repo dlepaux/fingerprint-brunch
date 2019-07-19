@@ -94,7 +94,7 @@ describe('Fingerprint', () => {
       }
     });
     setupFakeFileSystem(() => {
-      done()
+      done();
     });
   });
 
@@ -539,8 +539,27 @@ describe('Fingerprint', () => {
         // Expect parent file well fingerprinted
         expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal('undefined');
         expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal(undefined);
-        expect(fingerprint.map[fingerprint.unixify(filePath)]).to.be.not.equal(fingerprint.unixify(filePath));  
+        expect(fingerprint.map[fingerprint.unixify(filePath)]).to.be.not.equal(fingerprint.unixify(filePath));
         done();
+      });
+    });
+  });
+
+  describe('Prefixing AutReplaced assets', function() {
+    it('should prepend the prefix to autoreplaced assets', function(done) {
+      fingerprint.options.alwaysRun = true;
+      fingerprint.options.autoReplaceAndHash = true;
+      fingerprint.options.assetsPrefix = 'TestPrefix';
+      fingerprint._fingerprintAllAsync(path.join(__dirname, 'public', 'css', 'sample-2.css'), (err, filePath) => {
+        expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal('undefined');
+        expect(typeof(fingerprint.map[fingerprint.unixify(filePath)])).to.be.not.equal(undefined);
+        
+        fs.access(fingerprint.unixify(fingerprint.map[fingerprint.unixify(filePath)]), (err) => {
+          fs.readFile(fingerprint.unixify(fingerprint.map[fingerprint.unixify(filePath)]), 'utf-8', (err, data) => {
+            expect(data).to.match(/TestPrefix\/img\/troll/);
+            done();
+          });
+        });
       });
     });
   });
