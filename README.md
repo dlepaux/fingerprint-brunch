@@ -12,6 +12,7 @@ You're allowed to fingerprint specific files, assets folders, generated files an
 
 - [Installation](#installation)
 - [Usage](#usage)
+- [Options](#options)
 - [Testing / Issues](#testing)
 - [Contributing](#contributing)
 - [License](#license)
