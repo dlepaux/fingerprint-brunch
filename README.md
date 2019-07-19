@@ -49,7 +49,7 @@ _Optional_ You can override fingerprint-brunch's default options by updating you
 * __autoReplaceAndHash__: _(`Boolean`)_ Defaults to `false`
   - Find assets in your `jointTo` files. It will be finded with `url('path/to/assets.jpg')` in your css (for now)
 * __assetsPrefix__: _(`Boolean|String`)_ Defaults to `false`
-  - Prefix to prepend to replaced assets.
+  - Prefix to prepend to replaced assets path.
 * __publicRootPath__: _(`string`)_ Defaults to `/public`
   - For support multiple themes, you can set the public root path, exemple :
   - My config.paths.public is `../../public/theme/theme-1/` in `css` your fonts, images will be linked like that : `/theme/theme-1/img/troll.png`. 
