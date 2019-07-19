@@ -12,7 +12,6 @@ You're allowed to fingerprint specific files, assets folders, generated files an
 
 - [Installation](#installation)
 - [Usage](#usage)
-- [Options](#options)
 - [Testing / Issues](#testing)
 - [Contributing](#contributing)
 - [License](#license)
@@ -146,6 +145,7 @@ if you were to set `assetsPrefix: '/custom/'` the result would be:
 
 _Note: This could also be leveraged to prepend a CDN url for instance._
 
+
 ## <a name="testing"></a> Testing / Issues
 
 Run `npm i && npm test`
@@ -154,17 +154,6 @@ Run `npm i && npm test`
 ## <a name="contributing"></a> Contributing
 
 Pull requests are welcome. If you add functionality, then please add unit tests to cover it.
-
-
-## <a name="license"></a> License
-
-« Copyright © David Lepaux
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the “Software”), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-The Software is provided “as is”, without warranty of any kind, express or implied, including but not limited to the warranties of merchantability, fitness for a particular purpose and noninfringement. In no event shall the authors or copyright holders be liable for any claim, damages or other liability, whether in an action of contract, tort or otherwise, arising from, out of or in connection with the software or the use or other dealings in the Software. »
 
 [Brunch]: http://brunch.io
 [travis]: https://travis-ci.org/dlepaux/fingerprint-brunch

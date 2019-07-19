@@ -1,1 +1,0 @@
-var test = 'dlepaux/fingerprint-brunch is awesome';
