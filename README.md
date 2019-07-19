@@ -15,7 +15,6 @@ You're allowed to fingerprint specific files, assets folders, generated files an
 - [Options](#options)
 - [Testing / Issues](#testing)
 - [Contributing](#contributing)
-- [License](#license)
 
 ## <a name="installation"></a> Installation
 
